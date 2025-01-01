@@ -1,0 +1,17 @@
+# Avoid the following files when building a container from this dir
+
+# Exclude all subdir content...
+*/*
+# ...except for scripts, source code and documentation.
+!bin/
+!*/src/
+!*/Cargo.toml
+!*/benches/
+!*/examples/
+!*/README.md
+
+# Allow development build to package locally built binary
+target/x86_64-unknown-linux-musl/debug/*.*
+!target/x86_64-unknown-linux-musl/debug/*
+target/debug/*.*
+!target/debug/*
