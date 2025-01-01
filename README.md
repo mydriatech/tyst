@@ -46,3 +46,19 @@ The container only listens to plain HTTP connections, since it is assumed to
 be used internally in a Pod or secured by a service mesh where a
 [MITM attack](https://en.wikipedia.org/wiki/Man-in-the-middle_attack)
 would already imply a serious compromise of the platform.
+
+## License
+
+[Apache License 2.0 with Free world makers exception 1.0.0](LICENSE-Apache-2.0-with-FWM-Exception-1.0.0)
+
+The intent of this license to
+
+* Allow makers, innovators, integrators and engineers to do what they do best without blockers.
+* Give commercial and non-commercial entities in the free world a competitive advantage.
+* Support a long-term sustainable business model where no "open core" or "community edition" is ever needed.
+
+## Governance model
+
+This projects uses the [Benevolent Dictator Governance Model](http://oss-watch.ac.uk/resources/benevolentdictatorgovernancemodel) (site only seem to support plain HTTP).
+
+See also [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md).

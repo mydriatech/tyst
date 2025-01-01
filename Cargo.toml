@@ -2,7 +2,6 @@
 
 [workspace]
 resolver = "2"
-#edition = "2021"
 
 members = [
     "tyst-traits",
@@ -22,7 +21,6 @@ members = [
 [profile.release]
 opt-level = 3
 # https://doc.rust-lang.org/rustc/codegen-options/index.html#strip
-#strip = "debuginfo"
 strip = "symbols"
 # Link time optimizations off->false->thin->fat
 lto = "fat"
@@ -35,5 +33,3 @@ codegen-units = 1
 #debug = 1
 # Keep debug!() and trace!()
 #debug-logging=true
-
-#[dependencies]
