@@ -1,0 +1,11 @@
+[package]
+name = "tyst_api_rest_health"
+version = "0.0.0"
+edition = "2021"
+description = "TYST REST API EMP Health library"
+license = "Apache-2.0 WITH FWM-Exception-1.0.0"
+
+[dependencies]
+actix-web = { version = "4.6", default-features = false, features = ["macros", "http2", "compress-brotli"] }
+utoipa = { version = "5", features = ["actix_extras"] }
+serde = { version = "1.0", default-features = false, features = ["std"] }

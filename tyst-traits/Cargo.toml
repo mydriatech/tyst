@@ -1,0 +1,8 @@
+[package]
+name = "tyst_traits"
+version = "0.0.0"
+edition = "2021"
+description = "TYST Traits and Common Objects"
+license = "Apache-2.0 WITH FWM-Exception-1.0.0"
+
+[dependencies]

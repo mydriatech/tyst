@@ -1,0 +1,8 @@
+[package]
+name = "tyst_encdec"
+version = "0.0.0"
+edition = "2021"
+description = "TYST encoding and decoding utilities"
+license = "Apache-2.0 WITH FWM-Exception-1.0.0"
+
+[dependencies]

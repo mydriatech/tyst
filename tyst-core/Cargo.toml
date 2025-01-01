@@ -1,0 +1,47 @@
+[package]
+name = "tyst_core"
+version = "0.0.0"
+edition = "2021"
+description = "TYST Core"
+license = "Apache-2.0 WITH FWM-Exception-1.0.0"
+
+[[bench]]
+name = "all"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dependencies]
+
+tyst_traits = { path = "../tyst-traits" }
+tyst_crypto = { path = "../tyst-crypto", optional = true }
+tyst_ext_rust_crypto = { path = "../tyst-ext-rust-crypto", optional = true }
+tyst_encdec = { path = "../tyst-encdec" }
+
+log = { version = "0.4", default-features = false, features = ["release_max_level_debug"] }
+env_logger = { version = "0.11.1", default-features = false, features = [] }
+
+crossbeam-skiplist = { version = "0.1", default-features = true }
+
+# Rust nightly benchmark port to stable
+# This should be possible to move to dev-deps
+bencher = { version = "0.1", default-features = true, features = [] }
+
+[dev-dependencies]
+# Parsing of test vectors
+serde = { version = "1.0", default-features = false, features = ["std"] }
+serde_with = { version = "3.11", default-features = true, features = ["hex"] }
+serde_json = "1.0"
+
+# Automatic resource download during testing
+ureq = { version = "2.10", default-features = true, features = [] }
+url = { version = "2.5", default-features = true, features = [] }
+
+# Rust nightly benchmark port to stable
+#bencher = { version = "0.1", default-features = true, features = [] }
+
+[features]
+default = ["internal", "external"]
+internal = ["dep:tyst_crypto"]
+external = ["dep:tyst_ext_rust_crypto"]

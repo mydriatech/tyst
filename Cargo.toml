@@ -1,0 +1,39 @@
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+resolver = "2"
+#edition = "2021"
+
+members = [
+    "tyst-traits",
+    "tyst-encdec",
+    "tyst-core",
+    "tyst-crypto",
+    "tyst-api-rest",
+    "tyst-api-rest-health",
+    "tyst-ext-rust-crypto",
+]
+
+#[profile.dev]
+#opt-level = 1
+#lto = "thin"
+#incremental = true
+
+[profile.release]
+opt-level = 3
+# https://doc.rust-lang.org/rustc/codegen-options/index.html#strip
+#strip = "debuginfo"
+strip = "symbols"
+# Link time optimizations off->false->thin->fat
+lto = "fat"
+# No stack unwinding is required -> reduce size of code
+panic = 'abort'
+# No fast parallel processing to look for addition optimizations
+# Saves a MB or so for 20 extra seconds
+codegen-units = 1
+# For profiling
+#debug = 1
+# Keep debug!() and trace!()
+#debug-logging=true
+
+#[dependencies]

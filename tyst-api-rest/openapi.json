@@ -1,0 +1,1334 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "tyst_api_rest",
+    "description": "TYST REST API",
+    "license": {
+      "name": "Apache-2.0 WITH FWM-Exception-1.0.0",
+      "identifier": "Apache-2.0 WITH FWM-Exception-1.0.0"
+    },
+    "version": "0.0.0"
+  },
+  "paths": {
+    "/digest/{algorithm}": {
+      "post": {
+        "tags": [
+          "digest_resources"
+        ],
+        "summary": "Produce message digest (hash)",
+        "description": "Produce message digest (hash) from binary input.\nSending \"Accept: */*\" returns the hex encoded version of the digest.",
+        "operationId": "digest",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Message Digest (hash)",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32",
+                    "minimum": 0
+                  }
+                }
+              },
+              "plain/text": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "0123456789abcdef0123456789abcdef (hex encoded)"
+              }
+            }
+          },
+          "400": {
+            "description": "Failure"
+          }
+        }
+      }
+    },
+    "/digests": {
+      "get": {
+        "tags": [
+          "digest_resources"
+        ],
+        "summary": "List available digest algorithms",
+        "description": "List all available messsage digest (hash) algorithms.",
+        "operationId": "digests",
+        "responses": {
+          "200": {
+            "description": "List of available algorithms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "provider_id",
+                      "confinement_type"
+                    ],
+                    "properties": {
+                      "confinement_type": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "oid": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "provider_id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "health_resources"
+        ],
+        "summary": "This endpoint returns the combined status of initialized, readiness and\nliveness of a microservice.\n\nCorresponds to the Kubernetes readiness probe.",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "HTTP response body object for health requests. Only basic status is\nsupported.",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Undetermined"
+          },
+          "503": {
+            "description": "Down"
+          }
+        }
+      }
+    },
+    "/health/live": {
+      "get": {
+        "tags": [
+          "health_resources"
+        ],
+        "summary": "This endpoint returns the liveness of a microservice, or whether it\nencountered a bug or deadlock. If this check fails, the microservice is not\nrunning and can be stopped.\n\nThis endpoint corresponds to the Kubernetes liveness probe, which automatically\nrestarts the pod if the check fails.",
+        "operationId": "health_live",
+        "responses": {
+          "200": {
+            "description": "Up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "HTTP response body object for health requests. Only basic status is\nsupported.",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Undetermined"
+          },
+          "503": {
+            "description": "Down"
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "health_resources"
+        ],
+        "summary": "This endpoint returns the readiness of a microservice, or whether it is ready\nto process requests.\n\nCorresponds to the Kubernetes readiness probe.",
+        "operationId": "health_ready",
+        "responses": {
+          "200": {
+            "description": "Up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "HTTP response body object for health requests. Only basic status is\nsupported.",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Undetermined"
+          },
+          "503": {
+            "description": "Down"
+          }
+        }
+      }
+    },
+    "/health/started": {
+      "get": {
+        "tags": [
+          "health_resources"
+        ],
+        "summary": "In MicroProfile Health 3.1 and later, you can use this endpoint to determine\nwhether your deployed applications are initialized, according to criteria that\nyou define.\n\nCorresponds to the Kubernetes startup probe.",
+        "operationId": "health_started",
+        "responses": {
+          "200": {
+            "description": "Up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "HTTP response body object for health requests. Only basic status is\nsupported.",
+                  "required": [
+                    "status"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Undetermined"
+          },
+          "503": {
+            "description": "Down"
+          }
+        }
+      }
+    },
+    "/kem/{algorithm}/decapsulate": {
+      "post": {
+        "tags": [
+          "kem_resources"
+        ],
+        "summary": "Derive a shared secret though KEM decapsulation.",
+        "description": "Derive the same shared secret as the other party by decapsulating the\nrecieved cipher text with the decapsulation key.",
+        "operationId": "kem_decapsulate",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "decapsulation_key",
+                  "cipher_text_b64"
+                ],
+                "properties": {
+                  "cipher_text_b64": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  },
+                  "decapsulation_key": {
+                    "type": "object",
+                    "required": [
+                      "key_material_b64"
+                    ],
+                    "properties": {
+                      "confinement_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Identifier used by provider to locate the correct confinement."
+                      },
+                      "confinement_type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Type of confinement. E.g. \"soft\"."
+                      },
+                      "key_material_b64": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "format": "int32",
+                          "minimum": 0
+                        },
+                        "description": "Base64 encoded key material"
+                      },
+                      "object_reference": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Identifier used by provider to locate the correct object."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "shared_secret_b64"
+                  ],
+                  "properties": {
+                    "shared_secret_b64": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failure"
+          }
+        }
+      }
+    },
+    "/kem/{algorithm}/encapsulate": {
+      "post": {
+        "tags": [
+          "kem_resources"
+        ],
+        "summary": "Generate a shared secret and encapsulate it.",
+        "description": "Generate a shared secret and encapsulate the shared secret using the KEM\nencapsulation key. The encapsulated shared secret is returned both in plain\nand as cipher_text. The cipher_text can be sent to the other party.",
+        "operationId": "kem_encapsulate",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "encapsulation_key_b64"
+                ],
+                "properties": {
+                  "encapsulation_key_b64": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "cipher_text_b64",
+                    "shared_secret_b64"
+                  ],
+                  "properties": {
+                    "cipher_text_b64": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    },
+                    "shared_secret_b64": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failure"
+          }
+        }
+      }
+    },
+    "/kem/{algorithm}/keygen": {
+      "post": {
+        "tags": [
+          "kem_resources"
+        ],
+        "summary": "Start generation of KEM en-/decapsulation keys.",
+        "description": "Start generation of a pair of suitable encapsulation and decapsulation keys\nfor the Key Encapsulation Mechanism (KEM) algorithm.",
+        "operationId": "kem_keygen",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "description": "The KEM algorithm.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Key generation has started. Redirecting to result resource."
+          },
+          "404": {
+            "description": "Failed to start"
+          },
+          "429": {
+            "description": "Too many requests are already in progress"
+          }
+        }
+      }
+    },
+    "/kem/{algorithm}/keygen/{generation_request_id}": {
+      "get": {
+        "tags": [
+          "kem_resources"
+        ],
+        "summary": "Get generated KEM en-/decapsulation keys.",
+        "description": "Get generated pair of suitable encapsulation and decapsulation keys for the\nKey Encapsulation Mechanism (KEM) algorithm.",
+        "operationId": "kem_keygen_result",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "description": "The KEM algorithm.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "generation_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "decapsulation_key",
+                    "encapsulation_key_b64"
+                  ],
+                  "properties": {
+                    "decapsulation_key": {
+                      "type": "object",
+                      "required": [
+                        "key_material_b64"
+                      ],
+                      "properties": {
+                        "confinement_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Identifier used by provider to locate the correct confinement."
+                        },
+                        "confinement_type": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Type of confinement. E.g. \"soft\"."
+                        },
+                        "key_material_b64": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "format": "int32",
+                            "minimum": 0
+                          },
+                          "description": "Base64 encoded key material"
+                        },
+                        "object_reference": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Identifier used by provider to locate the correct object."
+                        }
+                      }
+                    },
+                    "encapsulation_key_b64": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "307": {
+            "description": "Not ready yet"
+          },
+          "404": {
+            "description": "Key pair generation failed or was never started."
+          }
+        }
+      }
+    },
+    "/kems": {
+      "get": {
+        "tags": [
+          "kem_resources"
+        ],
+        "summary": "List available KEM algorithms",
+        "description": "List all available Key Encapsulation Mechanism (KEM) algorithms.",
+        "operationId": "kems",
+        "responses": {
+          "200": {
+            "description": "List of available algorithms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "provider_id",
+                      "confinement_type"
+                    ],
+                    "properties": {
+                      "confinement_type": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "oid": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "provider_id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mac/{algorithm}/keygen": {
+      "post": {
+        "tags": [
+          "mac_resources"
+        ],
+        "summary": "Generation of MAC key.",
+        "description": "Generate a suitable key for the Message Authentication Code (MAC) algorithm.",
+        "operationId": "mac_keygen",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "description": "The MAC algorithm.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "key"
+                  ],
+                  "properties": {
+                    "key": {
+                      "type": "object",
+                      "required": [
+                        "key_material_b64"
+                      ],
+                      "properties": {
+                        "confinement_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Identifier used by provider to locate the correct confinement."
+                        },
+                        "confinement_type": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Type of confinement. E.g. \"soft\"."
+                        },
+                        "key_material_b64": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "format": "int32",
+                            "minimum": 0
+                          },
+                          "description": "Base64 encoded key material"
+                        },
+                        "object_reference": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Identifier used by provider to locate the correct object."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Key generation failed or was never started."
+          }
+        }
+      }
+    },
+    "/mac/{algorithm}/mac": {
+      "post": {
+        "tags": [
+          "mac_resources"
+        ],
+        "summary": "Produce MAC",
+        "description": "Produce Message Authentication Code (MAC).",
+        "operationId": "mac",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "description": "The MAC algorithm.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "key",
+                  "message_b64"
+                ],
+                "properties": {
+                  "key": {
+                    "type": "object",
+                    "required": [
+                      "key_material_b64"
+                    ],
+                    "properties": {
+                      "confinement_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Identifier used by provider to locate the correct confinement."
+                      },
+                      "confinement_type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Type of confinement. E.g. \"soft\"."
+                      },
+                      "key_material_b64": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "format": "int32",
+                          "minimum": 0
+                        },
+                        "description": "Base64 encoded key material"
+                      },
+                      "object_reference": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Identifier used by provider to locate the correct object."
+                      }
+                    }
+                  },
+                  "message_b64": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "mac_b64"
+                  ],
+                  "properties": {
+                    "mac_b64": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Fail"
+          }
+        }
+      }
+    },
+    "/macs": {
+      "get": {
+        "tags": [
+          "mac_resources"
+        ],
+        "summary": "List available MAC algorithms",
+        "description": "List all available Message Authentication Code (MAC) algorithms.",
+        "operationId": "macs",
+        "responses": {
+          "200": {
+            "description": "List of available algorithms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "provider_id",
+                      "confinement_type"
+                    ],
+                    "properties": {
+                      "confinement_type": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "oid": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "provider_id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/prng/{algorithm}/random/{length}": {
+      "get": {
+        "tags": [
+          "prng_resources"
+        ],
+        "summary": "Get random bytes.",
+        "description": "Return random bytes of the requested length using and instance of the\nrequested Psudedo Random Number Generator (PRNG) algorithm.\nIf 'algorithm_name' is set to 'default', a cryptographically strong\ngenerator will be choosen.\nSending 'Accept: */*' returns the hex encoded version of the digest.",
+        "operationId": "prng_random",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "length",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Random data",
+            "content": {
+              "application/octet-stream": {}
+            }
+          },
+          "400": {
+            "description": "Failure"
+          }
+        }
+      }
+    },
+    "/prngs": {
+      "get": {
+        "tags": [
+          "prng_resources"
+        ],
+        "summary": "List available PRNG algorithms",
+        "description": "List all available Psudedo Random Number Generator (PRNG) algorithms.",
+        "operationId": "prngs",
+        "responses": {
+          "200": {
+            "description": "List of available algorithms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "provider_id",
+                      "confinement_type"
+                    ],
+                    "properties": {
+                      "confinement_type": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "oid": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "provider_id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/se/{algorithm}/keygen": {
+      "post": {
+        "tags": [
+          "se_resources"
+        ],
+        "summary": "Start key pair generation.",
+        "description": "Start generation of a suitable asymmetric key pair for the signature algorithm.",
+        "operationId": "se_keygen",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "description": "The signature algorithm.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "strength",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "strength": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "format": "int32",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "Key generation has started. Redirecting to result resource."
+          },
+          "404": {
+            "description": "Failed to start"
+          },
+          "429": {
+            "description": "Too many requests are already in progress"
+          }
+        }
+      }
+    },
+    "/se/{algorithm}/keygen/{generation_request_id}": {
+      "get": {
+        "tags": [
+          "se_resources"
+        ],
+        "summary": "Get generated key pair.",
+        "description": "Get generated suitable asymmetric key pair for the signature algorithm.",
+        "operationId": "se_keygen_result",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "description": "The signature algorithm.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "generation_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "private_key",
+                    "public_key_b64"
+                  ],
+                  "properties": {
+                    "private_key": {
+                      "type": "object",
+                      "required": [
+                        "key_material_b64"
+                      ],
+                      "properties": {
+                        "confinement_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Identifier used by provider to locate the correct confinement."
+                        },
+                        "confinement_type": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Type of confinement. E.g. \"soft\"."
+                        },
+                        "key_material_b64": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "format": "int32",
+                            "minimum": 0
+                          },
+                          "description": "Base64 encoded key material"
+                        },
+                        "object_reference": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Identifier used by provider to locate the correct object."
+                        }
+                      }
+                    },
+                    "public_key_b64": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "307": {
+            "description": "Generation is still in progress."
+          },
+          "404": {
+            "description": "Key pair generation failed or was never started."
+          }
+        }
+      }
+    },
+    "/se/{algorithm}/sign": {
+      "post": {
+        "tags": [
+          "se_resources"
+        ],
+        "summary": "Generate a signature.",
+        "description": "Generate a signature of the message (data) with the private key from the asymmetric key pair.",
+        "operationId": "se_sign",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "private_key",
+                  "message_b64"
+                ],
+                "properties": {
+                  "message_b64": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  },
+                  "private_key": {
+                    "type": "object",
+                    "required": [
+                      "key_material_b64"
+                    ],
+                    "properties": {
+                      "confinement_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Identifier used by provider to locate the correct confinement."
+                      },
+                      "confinement_type": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Type of confinement. E.g. \"soft\"."
+                      },
+                      "key_material_b64": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "format": "int32",
+                          "minimum": 0
+                        },
+                        "description": "Base64 encoded key material"
+                      },
+                      "object_reference": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "description": "Identifier used by provider to locate the correct object."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "signature_b64"
+                  ],
+                  "properties": {
+                    "signature_b64": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failure"
+          }
+        }
+      }
+    },
+    "/se/{algorithm}/verify": {
+      "post": {
+        "tags": [
+          "se_resources"
+        ],
+        "summary": "Verify a signature.",
+        "description": "Verify a signature of the message (data) with the public key from the asymmetric key pair.",
+        "operationId": "se_verify",
+        "parameters": [
+          {
+            "name": "algorithm",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "public_key_b64",
+                  "signature_b64",
+                  "message_b64"
+                ],
+                "properties": {
+                  "message_b64": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  },
+                  "public_key_b64": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  },
+                  "signature_b64": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Signature verification failed"
+          }
+        }
+      }
+    },
+    "/ses": {
+      "get": {
+        "tags": [
+          "se_resources"
+        ],
+        "summary": "List available signature engine algorithms",
+        "description": "List all available asymmetric signature engine algorithms.",
+        "operationId": "ses",
+        "responses": {
+          "200": {
+            "description": "List of available algorithms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "provider_id",
+                      "confinement_type"
+                    ],
+                    "properties": {
+                      "confinement_type": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "oid": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "provider_id": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {}
+}
