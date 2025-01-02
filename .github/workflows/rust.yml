@@ -57,5 +57,8 @@ jobs:
       uses: EmbarkStudios/cargo-deny-action@v1
       with:
         command: check licenses
+    # https://github.com/rustsec/rustsec
+    - name: Install cargo audit
+      run: cargo install cargo-audit --locked
     - name: Check for known vulnerabilities
       run: cargo audit
