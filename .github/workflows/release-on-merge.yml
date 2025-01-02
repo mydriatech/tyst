@@ -59,8 +59,8 @@ jobs:
         with:
           cosign-release: 'v2.2.4'
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      #- name: Set up QEMU
+      #  uses: docker/setup-qemu-action@v3
 
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
@@ -96,7 +96,8 @@ jobs:
           file: ./Containerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          platforms: linux/amd64,linux/arm64
+          #platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             CARGO_PKG_VERSION_OVERRIDE=${{ needs.tag.outputs.new_tag }}
