@@ -114,10 +114,8 @@ impl MldsaParams {
                     c_tilde,
                     // Derived
                     crypto_bytes: c_tilde + l * poly_z_packed_bytes + poly_vec_h_packed_bytes,
-                    poly_uniform_gamma_1_n_blocks: ((poly_z_packed_bytes
-                        + ShakeSymmetric::STREAM_256_BLOCK_BYTES
-                        - 1)
-                        / ShakeSymmetric::STREAM_256_BLOCK_BYTES),
+                    poly_uniform_gamma_1_n_blocks: poly_z_packed_bytes
+                        .div_ceil(ShakeSymmetric::STREAM_256_BLOCK_BYTES),
                     poly_uniform_eta_n_blocks: 136 + ShakeSymmetric::STREAM_256_BLOCK_BYTES - 1,
                 }
             }
@@ -145,10 +143,8 @@ impl MldsaParams {
                     c_tilde,
                     // Derived
                     crypto_bytes: c_tilde + l * poly_z_packed_bytes + poly_vec_h_packed_bytes,
-                    poly_uniform_gamma_1_n_blocks: ((poly_z_packed_bytes
-                        + ShakeSymmetric::STREAM_256_BLOCK_BYTES
-                        - 1)
-                        / ShakeSymmetric::STREAM_256_BLOCK_BYTES),
+                    poly_uniform_gamma_1_n_blocks: poly_z_packed_bytes
+                        .div_ceil(ShakeSymmetric::STREAM_256_BLOCK_BYTES),
                     poly_uniform_eta_n_blocks: 227 + ShakeSymmetric::STREAM_256_BLOCK_BYTES - 1,
                 }
             }
@@ -176,10 +172,8 @@ impl MldsaParams {
                     c_tilde,
                     // Derived
                     crypto_bytes: c_tilde + l * poly_z_packed_bytes + poly_vec_h_packed_bytes,
-                    poly_uniform_gamma_1_n_blocks: ((poly_z_packed_bytes
-                        + ShakeSymmetric::STREAM_256_BLOCK_BYTES
-                        - 1)
-                        / ShakeSymmetric::STREAM_256_BLOCK_BYTES),
+                    poly_uniform_gamma_1_n_blocks: poly_z_packed_bytes
+                        .div_ceil(ShakeSymmetric::STREAM_256_BLOCK_BYTES),
                     poly_uniform_eta_n_blocks: 136 + ShakeSymmetric::STREAM_256_BLOCK_BYTES - 1,
                 }
             }
