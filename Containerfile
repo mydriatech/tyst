@@ -1,14 +1,13 @@
-ARG IMAGE="docker.io/library/rust:alpine"
-
-FROM ${IMAGE} as builder
-ARG TARGET="x86_64-unknown-linux-musl"
+FROM docker.io/library/rust:alpine as builder
 WORKDIR /work
 COPY . .
 RUN \
     apk add musl-dev curl xz && \
     cargo update && \
-    cargo build --target=${TARGET} --release && \
-    cp /work/target/${TARGET}/release/tyst /work/target/tyst && \
+    cargo build --target=x86_64-unknown-linux-musl --release || \
+    cargo build --target=aarch64-unknown-linux-musl --release && \
+    cp /work/target/x86_64-unknown-linux-musl/release/tyst /work/target/tyst || \
+    cp /work/target/aarch64-unknown-linux-musl/release/tyst /work/target/tyst && \
     # UPX cuts the container size by 2/3rds, but might get flagged by AV scanners
     # Fedora uses "LicenseRef-GPL-2.0-or-later-WITH-UPX" as SPDX expression.
     # -> Skip this for now.
