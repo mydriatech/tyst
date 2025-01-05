@@ -6,6 +6,15 @@ Easy crypto agility and Post-Quantum Cryptography (PQC) at scale for everyone in
 
 The worlds greatest crypto agile library [BouncyCastle](https://www.bouncycastle.org/) was not available for Rust when the author needed it. And so the rusTY ShelTer (TYST) was born.
 
+Not a rustacean? Not a problem! A tiny containerized turnkey version is available
+where you can enjoy a crypto agile REST API from your favorite language.
+
+## Quick starts
+
+Turnkey crypto agililty REST API container [quick start](tyst-api-rest/README.md#quick-start).
+
+Rust crypto provider [quick start](tyst-core/README.md#quick-start).
+
 ## Components
 
 ### [`tyst-api-rest/`](tyst-api-rest/)

@@ -14,11 +14,7 @@ Run the latest version
 podman run --rm --pull always --name tyst -P ghcr.io/mydriatech/tyst:latest
 ```
 
-Show API
-
-```text
-curl -L 127.0.0.1:8084/openapi
-```
+Once you have it running, jump to the [examples](README.md#examples) below.
 
 ## Intended use-case
 
@@ -50,7 +46,7 @@ very large payload are still on the roadmap.
 
 ## REST API documentation
 
-Please see the generated OpenAPI documentation in `[openapi.json](openapi.json)`.
+Please see the generated OpenAPI documentation in [`openapi.json`](openapi.json).
 
 A small CLI is provided for re-generating this during development.
 
@@ -115,21 +111,21 @@ curl http://127.0.0.1:8084/api/v1/ses -s -o -
 
 # Generate a ML-DSA-87 key pair
 eater=$(curl http://127.0.0.1:8084/api/v1/se/ML-DSA-87/keygen -d '' -s -o - -L)
-private_key_b64="$(echo $eater | jq -r .private_key )"
-public_key_b64="$(echo $eater | jq -r .public_key )"
+private_key_b64="$(echo $eater | jq -r .private_key.key_material_b64 )"
+public_key_b64="$(echo $eater | jq -r .public_key_b64 )"
 
 # Sign
 message_b64=$(echo "This will be signed." | base64)
 eater=$(curl http://127.0.0.1:8084/api/v1/se/ML-DSA-87/sign \
-    -d '{"private_key":"'${private_key_b64}'", "message":"'${message_b64}'"}' \
+    -d '{"private_key":{"key_material_b64":"'${private_key_b64}'"}, "message_b64":"'${message_b64}'"}' \
     --header "Content-type: application/json" \
     -s \
     -o -)
-signature_b64=$(echo $eater | jq -r .signature )
+signature_b64=$(echo $eater | jq -r .signature_b64 )
 
 # Verify signature (HTTP 204 means ok)
 curl http://127.0.0.1:8084/api/v1/se/ML-DSA-87/verify \
-    -d '{"public_key":"'${public_key_b64}'", "message":"'${message_b64}'", "signature":"'${signature_b64}'"}' \
+    -d '{"public_key_b64":"'${public_key_b64}'", "message_b64":"'${message_b64}'", "signature_b64":"'${signature_b64}'"}' \
     --header "Content-type: application/json" \
     -s \
     -o - -D -
