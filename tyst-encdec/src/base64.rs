@@ -118,15 +118,21 @@ pub fn encode(data: &[u8]) -> String {
         for (i, byte) in data[offset..].iter().take(3).enumerate() {
             match i {
                 0 => {
+                    // 0xfc: 1111 1100
                     out[0] = (byte & 0xfc) >> 2;
+                    // 0x03: 0000 0011
                     out[1] = (byte & 0x03) << 4;
                 }
                 1 => {
+                    // 0xf0: 1111 0000
                     out[1] |= (byte & 0xf0) >> 4;
+                    // 0xf0: 0000 1111
                     out[2] = (byte & 0x0f) << 2;
                 }
                 2 => {
-                    out[2] |= (byte & 0xc0) >> 2;
+                    // 0xc0: 1100 0000
+                    out[2] |= (byte & 0xc0) >> 6;
+                    // 0xc0: 0011 1111
                     out[3] = byte & 0x3f;
                 }
                 _ => panic!(),
@@ -137,4 +143,20 @@ pub fn encode(data: &[u8]) -> String {
         }
     }
     ret
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sanity_check() {
+        //crate::test::common::init_logger();
+        let expected = "TXlkcmlhVGVjaCBBQgo=";
+        assert_eq!(
+            encode(b"MydriaTech AB\n".as_slice()).as_str(),
+            expected,
+            "Basic base64 encoder is broken."
+        );
+    }
 }
