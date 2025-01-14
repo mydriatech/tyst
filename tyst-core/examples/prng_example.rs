@@ -17,8 +17,8 @@
 
 //! Example of using Psuedo Random Number Generator (PRNG) API
 
-use tyst_core::encdec::hex::ToHex;
-use tyst_core::Tyst;
+use tyst::encdec::hex::ToHex;
+use tyst::Tyst;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     {

@@ -17,10 +17,10 @@
 
 //! Example of using Signature Engine REST API
 
-use tyst_core::encdec::base64::ToBase64;
-use tyst_core::traits::se::ToPrivateKey;
-use tyst_core::traits::se::ToPublicKey;
-use tyst_core::Tyst;
+use tyst::encdec::base64::ToBase64;
+use tyst::traits::se::ToPrivateKey;
+use tyst::traits::se::ToPublicKey;
+use tyst::Tyst;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(
@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let algorithm = "ML-DSA-87";
     let mut se = Tyst::instance().ses().by_name(algorithm).unwrap();
     let (pub_key, priv_key) = se.generate_key_pair();
-    let pub_key_bytes = pub_key.try_as_bytes().unwrap();
+    let pub_key_bytes = pub_key.try_as_spki().unwrap();
     println!("Public key (b64, public):   {}", pub_key_bytes.to_base64());
     let priv_key_bytes = priv_key.try_as_bytes().unwrap();
     println!("Private key (b64, private): {}", priv_key_bytes.to_base64());

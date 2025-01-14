@@ -20,7 +20,7 @@
 use bencher::benchmark_group;
 use bencher::Bencher;
 use core::hint::black_box;
-use tyst_core::Tyst;
+use tyst::Tyst;
 
 fn ml_dsa_keygen(bench: &mut Bencher) {
     bench.iter(|| {

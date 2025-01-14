@@ -30,7 +30,7 @@ use serde::Serialize;
 use serde_with::base64::Base64;
 use serde_with::serde_as;
 use serde_with::skip_serializing_none;
-use tyst_core::traits::factory::AlgorithmMetaData;
+use tyst::traits::factory::AlgorithmMetaData;
 use utoipa::ToSchema;
 
 pub const MAX_DOCUMENT_SIZE: usize = 5 * 1024 * 1024;

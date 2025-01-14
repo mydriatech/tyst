@@ -17,8 +17,8 @@
 
 //! ML-DSA public key.
 
-use tyst_traits::common::ConfinedObjectAsBytes;
-use tyst_traits::common::ConfinementError;
+use std::error::Error;
+
 use tyst_traits::se::PublicKey;
 
 use super::MldsaParams;
@@ -29,31 +29,71 @@ pub struct MldsaPublicKey {
     t1: Vec<u8>,
 }
 
+const OID_ML_DSA_44: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 17];
+const OID_ML_DSA_65: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 18];
+const OID_ML_DSA_87: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 19];
+
 impl TryFrom<&dyn PublicKey> for MldsaPublicKey {
     type Error = String;
 
     fn try_from(value: &dyn PublicKey) -> Result<Self, Self::Error> {
-        let encoded = value.try_as_bytes().unwrap();
-        // NIST FIPS 204 Table 2
-        let _algorithm_name = match encoded.len() {
-            1312 => "ML-DSA-44",
-            1952 => "ML-DSA-65",
-            2592 => "ML-DSA-87",
-            bad_size => {
-                return Err(format!(
-                    "Unknown algorithm for public key size of {bad_size} bytes."
-                ))
+        let spki: rasn_pkix::SubjectPublicKeyInfo =
+            rasn::der::decode(&value.try_as_spki().map_err(|e| e.to_string()).unwrap())
+                .map_err(|e| e.to_string())
+                .unwrap();
+        let encoded = spki.subject_public_key.as_raw_slice();
+        // Length check using NIST FIPS 204 Table 2
+        match spki.algorithm.algorithm.to_vec().as_slice() {
+            OID_ML_DSA_44 => {
+                if encoded.len() != 1312 {
+                    return Err(format!(
+                        "Public key length for ML-DSA-44 should be {}, not {}.",
+                        1312,
+                        encoded.len(),
+                    ));
+                }
             }
-        };
-        Ok(MldsaPublicKey::new(&encoded))
+            OID_ML_DSA_65 => {
+                if encoded.len() != 1952 {
+                    return Err(format!(
+                        "Public key length for ML-DSA-44 should be {}, not {}.",
+                        1952,
+                        encoded.len(),
+                    ));
+                }
+            }
+            OID_ML_DSA_87 => {
+                if encoded.len() != 2592 {
+                    return Err(format!(
+                        "Public key length for ML-DSA-44 should be {}, not {}.",
+                        2592,
+                        encoded.len(),
+                    ));
+                }
+            }
+            bad_oid => return Err(format!("Unknown algorithm {bad_oid:?} for public key.")),
+        }
+        Ok(MldsaPublicKey::new(encoded))
     }
 }
 
-impl PublicKey for MldsaPublicKey {}
-
-impl ConfinedObjectAsBytes for MldsaPublicKey {
-    fn try_as_bytes(&self) -> Result<Vec<u8>, ConfinementError> {
-        Ok(Self::encode(&self.rho, &self.t1))
+impl PublicKey for MldsaPublicKey {
+    fn try_as_spki(&self) -> Result<Vec<u8>, Box<dyn Error>> {
+        let oid = match self.t1.len() / MldsaParams::POLY_T1_PACKED_BYTES {
+            // Match MldsaParams.k
+            4 => OID_ML_DSA_44,
+            6 => OID_ML_DSA_65,
+            8 => OID_ML_DSA_87,
+            _ => panic!(),
+        };
+        rasn::der::encode(&rasn_pkix::SubjectPublicKeyInfo {
+            algorithm: rasn_pkix::AlgorithmIdentifier {
+                algorithm: rasn::types::ObjectIdentifier::new_unchecked(oid.into()),
+                parameters: None,
+            },
+            subject_public_key: rasn::types::BitString::from_vec(Self::encode(&self.rho, &self.t1)),
+        })
+        .map_err(|e| Box::new(e) as Box<dyn Error>)
     }
 }
 

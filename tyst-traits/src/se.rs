@@ -17,6 +17,8 @@
 
 //! Signature Engine (SE) traits and structs
 
+use std::error::Error;
+
 use crate::common::BasicConfinement;
 use crate::common::ConfinedObjectAsBytes;
 use crate::common::Confinement;
@@ -31,10 +33,23 @@ pub trait PrivateKey: Sync + Send + ConfinedObjectAsBytes {
 }
 
 /// Public key for asymmetric digital signatures (public)
-pub trait PublicKey: Sync + Send + ConfinedObjectAsBytes {
+pub trait PublicKey: Sync + Send {
     /// Information about where the key material can be used.
     fn confinement(&self) -> Box<dyn Confinement> {
         Box::new(BasicConfinement::Soft)
+    }
+
+    /// Get DER encoded `Subject Public Key Info` as defined in
+    /// [RFC5280](https://www.rfc-editor.org/rfc/rfc5280#section-4.1.2.7).
+    ///
+    /// Fail if no OID exists for the type of key or if confinement prevents
+    /// retrieval.
+    fn try_as_spki(&self) -> Result<Vec<u8>, Box<dyn Error>>;
+
+    /// Get raw key material as bytes
+    fn try_as_raw(&self) -> Result<Vec<u8>, Box<dyn Error>> {
+        let spki: rasn_pkix::SubjectPublicKeyInfo = rasn::der::decode(&self.try_as_spki()?)?;
+        Ok(spki.subject_public_key.as_raw_slice().to_vec())
     }
 }
 
@@ -73,18 +88,16 @@ impl ToPrivateKey for Vec<u8> {
 
 #[doc(hidden)]
 struct SoftPublicKey {
-    key_material: Vec<u8>,
+    spki: Vec<u8>,
 }
 
-impl PublicKey for SoftPublicKey {}
-
-impl ConfinedObjectAsBytes for SoftPublicKey {
-    fn try_as_bytes(&self) -> Result<Vec<u8>, ConfinementError> {
-        Ok(self.key_material.clone())
+impl PublicKey for SoftPublicKey {
+    fn try_as_spki(&self) -> Result<Vec<u8>, Box<dyn Error>> {
+        Ok(self.spki.clone())
     }
 }
 
-/// Interpret as a [PublicKey].
+/// Interpret encoded SPKI as a [PublicKey].
 pub trait ToPublicKey {
     /// Return the object as a [PublicKey].
     fn to_public_key(self) -> Box<dyn PublicKey>;
@@ -93,14 +106,14 @@ pub trait ToPublicKey {
 impl ToPublicKey for &[u8] {
     fn to_public_key(self) -> Box<dyn PublicKey> {
         Box::new(SoftPublicKey {
-            key_material: self.to_vec(),
+            spki: self.to_vec(),
         })
     }
 }
 
 impl ToPublicKey for Vec<u8> {
     fn to_public_key(self) -> Box<dyn PublicKey> {
-        Box::new(SoftPublicKey { key_material: self })
+        Box::new(SoftPublicKey { spki: self })
     }
 }
 
@@ -109,6 +122,13 @@ impl ToPublicKey for Vec<u8> {
 pub trait SignatureEngine: Send {
     /// Get human readable implementation identifier.
     fn get_algorithm_name(&self) -> String;
+
+    /// Get DER encoded `AlgorithmIdentifier` as defined in
+    /// [RFC5280](https://www.rfc-editor.org/rfc/rfc5280#section-4.1.1.2)
+    /// if available for this signature algorithm.
+    fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
+        None
+    }
 
     /// Generate a new asymmetric key pair and return the public and private key.
     fn generate_key_pair(&mut self) -> (Box<dyn PublicKey>, Box<dyn PrivateKey>);

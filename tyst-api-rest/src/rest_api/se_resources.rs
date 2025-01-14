@@ -37,17 +37,17 @@ use serde::{Deserialize, Serialize};
 use serde_with::base64::Base64;
 use serde_with::serde_as;
 use std::sync::Arc;
-use tyst_core::encdec::hex::ToHex;
-use tyst_core::traits::common::BasicConfinement;
-use tyst_core::traits::common::ConfinedObjectAsBytes;
-use tyst_core::traits::common::Confinement;
-use tyst_core::traits::common::ConfinementError;
-use tyst_core::traits::common::GenericConfinement;
-use tyst_core::traits::factory::FactoryCriteria;
-use tyst_core::traits::se::PrivateKey;
-use tyst_core::traits::se::PublicKey;
-use tyst_core::traits::se::SignatureEngineParams;
-use tyst_core::Tyst;
+use tyst::encdec::hex::ToHex;
+use tyst::traits::common::BasicConfinement;
+use tyst::traits::common::ConfinedObjectAsBytes;
+use tyst::traits::common::Confinement;
+use tyst::traits::common::ConfinementError;
+use tyst::traits::common::GenericConfinement;
+use tyst::traits::factory::FactoryCriteria;
+use tyst::traits::se::PrivateKey;
+use tyst::traits::se::PublicKey;
+use tyst::traits::se::SignatureEngineParams;
+use tyst::Tyst;
 use utoipa::schema;
 use utoipa::ToSchema;
 
@@ -126,18 +126,18 @@ impl From<&ConfinedKeyMaterial> for PrivateKeyHolder {
 }
 
 pub struct PublicKeyHolder {
-    pub encoded: Vec<u8>,
+    pub spki: Vec<u8>,
 }
-impl PublicKey for PublicKeyHolder {}
-impl ConfinedObjectAsBytes for PublicKeyHolder {
-    fn try_as_bytes(&self) -> std::result::Result<Vec<u8>, ConfinementError> {
-        Ok(self.encoded.clone())
+impl PublicKey for PublicKeyHolder {
+    fn try_as_spki(&self) -> std::result::Result<Vec<u8>, Box<dyn std::error::Error>> {
+        Ok(self.spki.clone())
     }
 }
+
 impl From<&[u8]> for PublicKeyHolder {
     fn from(value: &[u8]) -> Self {
         Self {
-            encoded: value.to_vec(),
+            spki: value.to_vec(),
         }
     }
 }
@@ -228,7 +228,7 @@ pub async fn se_keygen(
             generation_request_id,
             Some(SeKeyPairHolder {
                 private_key: confined_private_key,
-                public_key_b64: public_key.try_as_bytes().unwrap(),
+                public_key_b64: public_key.try_as_spki().unwrap(),
             }),
         );
     });

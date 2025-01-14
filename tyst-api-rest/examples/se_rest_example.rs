@@ -17,7 +17,7 @@
 
 //! Example of using Signature Engine REST API
 
-use tyst_core::encdec::base64;
+use tyst::encdec::base64;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(endpoint) = std::env::args().nth(1) {

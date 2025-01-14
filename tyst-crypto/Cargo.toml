@@ -16,6 +16,10 @@ env_logger = { version = "0.11.1", default-features = false, features = [] }
 getrandom = { version = "0.2", default-features = false, features = [] }
 constant_time_eq = { version = "0.3", default-features = false, features = [] }
 
+# https://docs.rs/rasn/latest/rasn/
+rasn = { version = "0.22", default-features = false, features = []  }
+rasn-pkix = { version = "0.22", default-features = false, features = []  }
+
 [dev-dependencies]
 # Parsing of test vectors
 serde = { version = "1.0", default-features = false, features = ["std"] }

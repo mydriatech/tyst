@@ -17,9 +17,9 @@
 
 //! Example of using Key Encapsulation Mechanism (KEM) API
 
-use tyst_core::encdec::base64::ToBase64;
-use tyst_core::traits::kem::ToEncapsulationKey;
-use tyst_core::Tyst;
+use tyst::encdec::base64::ToBase64;
+use tyst::traits::kem::ToEncapsulationKey;
+use tyst::Tyst;
 use tyst_traits::kem::KemCipherText;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

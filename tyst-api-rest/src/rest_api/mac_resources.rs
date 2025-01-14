@@ -32,15 +32,15 @@ use actix_web::Result;
 use serde::{Deserialize, Serialize};
 use serde_with::base64::Base64;
 use serde_with::serde_as;
-use tyst_core::traits::common::BasicConfinement;
-use tyst_core::traits::common::ConfinedObjectAsBytes;
-use tyst_core::traits::common::Confinement;
-use tyst_core::traits::common::ConfinementError;
-use tyst_core::traits::common::GenericConfinement;
-use tyst_core::traits::factory::FactoryCriteria;
-use tyst_core::traits::mac::MacKey;
-use tyst_core::traits::mac::MacParams;
-use tyst_core::Tyst;
+use tyst::traits::common::BasicConfinement;
+use tyst::traits::common::ConfinedObjectAsBytes;
+use tyst::traits::common::Confinement;
+use tyst::traits::common::ConfinementError;
+use tyst::traits::common::GenericConfinement;
+use tyst::traits::factory::FactoryCriteria;
+use tyst::traits::mac::MacKey;
+use tyst::traits::mac::MacParams;
+use tyst::Tyst;
 use utoipa::ToSchema;
 
 #[serde_as]

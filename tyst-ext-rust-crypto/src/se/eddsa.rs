@@ -20,6 +20,8 @@
 //!
 //! EdDSA is defined in [RFC8032](https://www.rfc-editor.org/rfc/rfc8032).
 
+use std::error::Error;
+
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -30,6 +32,12 @@ use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
 use tyst_traits::CryptoRegistry;
 
+// https://www.rfc-editor.org/rfc/rfc8410#section-9
+// id-edwards-curve-algs OBJECT IDENTIFIER ::= { 1 3 101 }
+// id-Ed25519       OBJECT IDENTIFIER ::= { id-edwards-curve-algs 112 }
+
+const ISO_IDENTIFIED_ORGANISATION_ID_EDWARDS_CURVE_ALGS_ID_ED25519: &str = "1.3.101.112";
+
 /// Factory for [EddsaSignatureEngine].
 pub struct EddsaSignatureEngineFactory {
     provided: Vec<AlgorithmMetaData>,
@@ -37,10 +45,10 @@ pub struct EddsaSignatureEngineFactory {
 impl Default for EddsaSignatureEngineFactory {
     fn default() -> Self {
         Self {
-            provided: vec![AlgorithmMetaData::new(
-                "EdDSA-Ed25519",
-                env!("CARGO_PKG_NAME"),
-            )],
+            provided: vec![
+                AlgorithmMetaData::new("EdDSA-Ed25519", env!("CARGO_PKG_NAME"))
+                    .set_oid(ISO_IDENTIFIED_ORGANISATION_ID_EDWARDS_CURVE_ALGS_ID_ED25519),
+            ],
         }
     }
 }
@@ -124,10 +132,8 @@ impl EddsaPublicKeyHolder {
     }
 }
 
-impl PublicKey for EddsaPublicKeyHolder {}
-
-impl ConfinedObjectAsBytes for EddsaPublicKeyHolder {
-    fn try_as_bytes(&self) -> Result<Vec<u8>, ConfinementError> {
+impl PublicKey for EddsaPublicKeyHolder {
+    fn try_as_spki(&self) -> Result<Vec<u8>, Box<dyn Error>> {
         Ok(
             ed25519_dalek::pkcs8::EncodePublicKey::to_public_key_der(&self.public_key)
                 .unwrap()
@@ -141,7 +147,7 @@ impl From<&Box<dyn PublicKey>> for EddsaPublicKeyHolder {
     fn from(public_key: &Box<dyn PublicKey>) -> Self {
         EddsaPublicKeyHolder::new(
             ed25519_dalek::pkcs8::DecodePublicKey::from_public_key_der(
-                &public_key.try_as_bytes().unwrap(),
+                &public_key.try_as_spki().unwrap(),
             )
             .unwrap(),
         )
@@ -151,6 +157,23 @@ impl From<&Box<dyn PublicKey>> for EddsaPublicKeyHolder {
 impl SignatureEngine for EddsaSignatureEngine {
     fn get_algorithm_name(&self) -> String {
         self.algorithm_name.to_owned()
+    }
+
+    fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
+        let algorithm = match self.algorithm_name.as_str() {
+            "EdDSA-Ed25519" => rasn::types::ObjectIdentifier::from(
+                rasn::types::Oid::new(&[1, 3, 101, 112]).unwrap(),
+            ),
+            bad_alg => {
+                panic!("Unsupported signature algorithm '{bad_alg}'.");
+            }
+        };
+        let algorithm_identifier = rasn_pkix::AlgorithmIdentifier {
+            algorithm,
+            // https://www.rfc-editor.org/rfc/rfc8410#section-6
+            parameters: None,
+        };
+        rasn::der::encode(&algorithm_identifier).ok()
     }
 
     fn generate_key_pair(&mut self) -> (Box<dyn PublicKey>, Box<dyn PrivateKey>) {
