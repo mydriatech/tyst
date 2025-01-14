@@ -5,9 +5,9 @@ edition = "2021"
 description = "TYST REST API"
 license = "Apache-2.0 WITH FWM-Exception-1.0.0"
 
-# Rename the default binary to "tyst"
+# Rename the default binary to "tyst-api-rest"
 [[bin]]
-name = "tyst"
+name = "tyst-api-rest"
 path = "src/main.rs"
 
 [[bin]]
@@ -21,7 +21,7 @@ ureq = { version = "2.10", default-features = true, features = ["json"] }
 
 [dependencies]
 tyst_api_rest_health = { path = "../tyst-api-rest-health", default-features = true, features = [] }
-tyst_core = { path = "../tyst-core", default-features = true, features = [] }
+tyst = { path = "../tyst-core", default-features = true, features = [] }
 
 # Async and concurrency
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "signal"] }

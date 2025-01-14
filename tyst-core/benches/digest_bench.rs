@@ -20,7 +20,7 @@
 use bencher::benchmark_group;
 use bencher::Bencher;
 use core::hint::black_box;
-use tyst_core::Tyst;
+use tyst::Tyst;
 
 fn sha3<const S: usize, const N: usize>(bench: &mut Bencher) {
     let data = [0u8; N];

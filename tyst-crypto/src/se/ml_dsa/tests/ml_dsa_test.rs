@@ -24,7 +24,7 @@ fn test_key_generation() {
                     let mut engine = MldsaEngine::new(parameter_set, Some(secure_random));
                     let (pub_key, priv_key) = engine.generate_key_pair();
                     assert_eq!(
-                        &pub_key.try_as_bytes().unwrap(),
+                        &pub_key.try_as_raw().unwrap(),
                         &test.get_pk(),
                         "{test_type}/{parameter_set}: Public key does not match the expected for test {}/{tg_id}/{}.",
                         acvp_tests.get_vs_id(), test.get_tc_id()

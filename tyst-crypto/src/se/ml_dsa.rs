@@ -132,6 +132,29 @@ impl SignatureEngine for MldsaEngine {
         self.algorithm_name.to_owned()
     }
 
+    fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
+        let algorithm = match self.algorithm_name.as_str() {
+            "ML-DSA-44" => rasn::types::ObjectIdentifier::from(
+                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 17]).unwrap(),
+            ),
+            "ML-DSA-65" => rasn::types::ObjectIdentifier::from(
+                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 18]).unwrap(),
+            ),
+            "ML-DSA-87" => rasn::types::ObjectIdentifier::from(
+                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 19]).unwrap(),
+            ),
+            bad_alg => {
+                panic!("Unsupported signature algorithm '{bad_alg}'.");
+            }
+        };
+        let algorithm_identifier = rasn_pkix::AlgorithmIdentifier {
+            algorithm,
+            // https://www.rfc-editor.org/rfc/rfc8410#section-6
+            parameters: None,
+        };
+        rasn::der::encode(&algorithm_identifier).ok()
+    }
+
     fn generate_key_pair(&mut self) -> (Box<dyn PublicKey>, Box<dyn PrivateKey>) {
         let (pub_key, priv_key) = self.generate_key_pair_with_secure_random();
         (Box::new(pub_key), Box::new(priv_key))

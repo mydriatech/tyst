@@ -26,8 +26,8 @@ use conf::AppConfig;
 use std::process::ExitCode;
 use std::sync::Arc;
 use tokio::signal::unix::{signal, SignalKind};
+use tyst::Tyst;
 use tyst_api_rest_health::AppHealth;
-use tyst_core::Tyst;
 
 fn main() -> ExitCode {
     if let Err(e) = init_logger() {

@@ -4,11 +4,11 @@ Core module for the TYST cryptographic provider.
 
 ## Description
 
-The `tyst_core` acts as a lookup registry and contains no cryptographic algorithm
+The `tyst` Rust crate acts as a lookup registry and contains no cryptographic algorithm
 implementations.
 
 Common implementations are added through the default feature flags and
-additional `tyst_traits::CryptoBundle`s can be added at any time during your
+additional `tyst::traits::CryptoBundle`s can be added at any time during your
 application's runtime.
 
 ## Quick start
@@ -17,13 +17,13 @@ Add the following to `Cargo.toml`:
 
 ```text
 [dependencies]
-tyst_core = { git = "https://github.com/mydriatech/tyst.git", branch = "main" }
+tyst = { git = "https://github.com/mydriatech/tyst.git", branch = "main" }
 ```
 
 Sign a message using ML-DSA:
 
 ```
-use tyst_core::Tyst;
+use tyst::Tyst;
 
 if let Some(mut se) = Tyst::instance().ses().by_name("ML-DSA-87") {
     let (pub_key, priv_key) = se.generate_key_pair();

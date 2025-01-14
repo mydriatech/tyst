@@ -27,8 +27,8 @@ use actix_web::Error;
 use actix_web::HttpRequest;
 use actix_web::HttpResponse;
 use actix_web::Result;
-use tyst_core::encdec::hex::ToHex;
-use tyst_core::Tyst;
+use tyst::encdec::hex::ToHex;
+use tyst::Tyst;
 
 /// List available digest algorithms
 ///

@@ -18,6 +18,8 @@
 //! External implementation of ECDSA from
 //! [RustCrypto: Signatures](https://github.com/RustCrypto/signatures/).
 
+use std::error::Error;
+
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -28,6 +30,14 @@ use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
 use tyst_traits::CryptoRegistry;
 
+// https://www.ietf.org/rfc/rfc5758.html#section-3.2
+// iso(1) member-body(2) us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) ecdsa-with-SHA256 (2)
+const OID_ISO_MEMBER_BODY_US_ANSI_X962_SIGNATURES_ECDSA_WITH_SHA2_SHA256: &str =
+    "1.2.840.10045.4.3.2";
+// iso(1) member-body(2) us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) ecdsa-with-SHA384 (2)
+const OID_ISO_MEMBER_BODY_US_ANSI_X962_SIGNATURES_ECDSA_WITH_SHA2_SHA384: &str =
+    "1.2.840.10045.4.3.3";
+
 /// Factory for [EcdsaSignatureEngine].
 pub struct EcdsaSignatureEngineFactory {
     provided: Vec<AlgorithmMetaData>,
@@ -36,9 +46,10 @@ impl Default for EcdsaSignatureEngineFactory {
     fn default() -> Self {
         Self {
             provided: vec![
-                AlgorithmMetaData::new("ECDSA-with-SHA-256", env!("CARGO_PKG_NAME")),
-                // iso(1) member-body(2) us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 3
-                AlgorithmMetaData::new("ECDSA-with-SHA-384", env!("CARGO_PKG_NAME")),
+                AlgorithmMetaData::new("ECDSA-with-SHA-256", env!("CARGO_PKG_NAME"))
+                    .set_oid(OID_ISO_MEMBER_BODY_US_ANSI_X962_SIGNATURES_ECDSA_WITH_SHA2_SHA256),
+                AlgorithmMetaData::new("ECDSA-with-SHA-384", env!("CARGO_PKG_NAME"))
+                    .set_oid(OID_ISO_MEMBER_BODY_US_ANSI_X962_SIGNATURES_ECDSA_WITH_SHA2_SHA384),
             ],
         }
     }
@@ -138,10 +149,8 @@ enum EcdsaPublicKeyHolder {
     },
 }
 
-impl PublicKey for EcdsaPublicKeyHolder {}
-
-impl ConfinedObjectAsBytes for EcdsaPublicKeyHolder {
-    fn try_as_bytes(&self) -> Result<Vec<u8>, ConfinementError> {
+impl PublicKey for EcdsaPublicKeyHolder {
+    fn try_as_spki(&self) -> Result<Vec<u8>, Box<dyn Error>> {
         Ok(match self {
             Self::K256 { public_key } => {
                 k256::pkcs8::EncodePublicKey::to_public_key_der(public_key)
@@ -162,13 +171,13 @@ impl EcdsaPublicKeyHolder {
         match curve_name {
             "secp256k1" => Self::K256 {
                 public_key: k256::pkcs8::DecodePublicKey::from_public_key_der(
-                    &public_key.try_as_bytes().unwrap(),
+                    &public_key.try_as_spki().unwrap(),
                 )
                 .unwrap(),
             },
             "P-384" => Self::P384 {
                 public_key: p384::pkcs8::DecodePublicKey::from_public_key_der(
-                    &public_key.try_as_bytes().unwrap(),
+                    &public_key.try_as_spki().unwrap(),
                 )
                 .unwrap(),
             },
