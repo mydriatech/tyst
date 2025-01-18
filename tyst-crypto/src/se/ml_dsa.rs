@@ -160,8 +160,8 @@ impl SignatureEngine for MldsaEngine {
         (Box::new(pub_key), Box::new(priv_key))
     }
 
-    fn sign(&mut self, private_key: &Box<dyn PrivateKey>, data: &[u8]) -> Option<Vec<u8>> {
-        match MldsaPrivateKey::try_from(private_key.as_ref()) {
+    fn sign(&mut self, private_key: &dyn PrivateKey, data: &[u8]) -> Option<Vec<u8>> {
+        match MldsaPrivateKey::try_from(private_key) {
             Err(e) => {
                 log::info!("Failed to parse private key: {e:?}");
                 None
@@ -187,13 +187,8 @@ impl SignatureEngine for MldsaEngine {
         }
     }
 
-    fn verify(
-        &mut self,
-        public_key: &Box<dyn PublicKey>,
-        signature: &[u8],
-        message: &[u8],
-    ) -> bool {
-        match MldsaPublicKey::try_from(public_key.as_ref()) {
+    fn verify(&mut self, public_key: &dyn PublicKey, signature: &[u8], message: &[u8]) -> bool {
+        match MldsaPublicKey::try_from(public_key) {
             Err(e) => {
                 log::info!("Failed to parse public key: {e:?}");
                 false

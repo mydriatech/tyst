@@ -120,7 +120,7 @@ fn test_prng_hmac_sha3_512() {
             .by_oid("2.16.840.1.101.3.4.2.16")
             .unwrap()
             .mac(
-                &tyst_encdec::hex::decode(key).to_mac_key(),
+                tyst_encdec::hex::decode(key).to_mac_key().as_ref(),
                 &tyst_encdec::hex::decode(msg),
             ),
     );
@@ -160,9 +160,9 @@ fn test_se_ml_dsa_happy_path() {
     for algorithm_name in ["ML-DSA-44", "ML-DSA-65", "ML-DSA-87"] {
         let mut engine = Tyst::instance().ses().by_name(algorithm_name).unwrap();
         let (public_key, private_key) = engine.generate_key_pair();
-        let signature = engine.sign(&private_key, message).unwrap();
+        let signature = engine.sign(private_key.as_ref(), message).unwrap();
         assert_eq!(
-            engine.verify(&public_key, &signature, message),
+            engine.verify(public_key.as_ref(), &signature, message),
             true,
             "Failed to verify own signature."
         );

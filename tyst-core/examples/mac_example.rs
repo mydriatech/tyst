@@ -45,7 +45,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             .macs()
             .by_name(algorithm)
             .unwrap()
-            .mac(&mac_key, message.as_bytes())
+            .mac(mac_key.as_ref(), message.as_bytes())
             .to_hex()
     );
     Ok(())

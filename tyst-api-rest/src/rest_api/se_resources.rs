@@ -317,7 +317,7 @@ pub async fn se_sign(
     ) {
         let private_key: Box<dyn PrivateKey> =
             Box::new(PrivateKeyHolder::from(&request.private_key));
-        if let Some(signature_b64) = se.sign(&private_key, &request.message_b64) {
+        if let Some(signature_b64) = se.sign(private_key.as_ref(), &request.message_b64) {
             Ok(Json(SignatureGenerationResponse { signature_b64 }))
         } else {
             Err(ErrorBadRequest("Unable to complete the request."))
@@ -354,7 +354,11 @@ pub async fn se_verify(
         .ses()
         .by_name(&algorithm_name)
         .unwrap()
-        .verify(&public_key, &request.signature_b64, &request.message_b64)
+        .verify(
+            public_key.as_ref(),
+            &request.signature_b64,
+            &request.message_b64,
+        )
     {
         Ok(HttpResponse::build(StatusCode::NO_CONTENT).finish())
     } else {

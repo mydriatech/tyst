@@ -118,7 +118,6 @@ impl ToPublicKey for Vec<u8> {
 }
 
 /// Signature Engine (SE)
-#[allow(clippy::borrowed_box)]
 pub trait SignatureEngine: Send {
     /// Get human readable implementation identifier.
     fn get_algorithm_name(&self) -> String;
@@ -134,12 +133,11 @@ pub trait SignatureEngine: Send {
     fn generate_key_pair(&mut self) -> (Box<dyn PublicKey>, Box<dyn PrivateKey>);
 
     /// Sign the `message` using the [PrivateKey] and return the raw signatue.
-    fn sign(&mut self, private_key: &Box<dyn PrivateKey>, message: &[u8]) -> Option<Vec<u8>>;
+    fn sign(&mut self, private_key: &dyn PrivateKey, message: &[u8]) -> Option<Vec<u8>>;
 
     /// Verify the `signature` of `message` using the [PublicKey] and return
     /// `true` if the signature was created with the corresponding [PrivateKey].
-    fn verify(&mut self, public_key: &Box<dyn PublicKey>, signature: &[u8], message: &[u8])
-        -> bool;
+    fn verify(&mut self, public_key: &dyn PublicKey, signature: &[u8], message: &[u8]) -> bool;
 }
 
 /** Builder style Signature Engine (SE) parameters.

@@ -144,7 +144,7 @@ impl<const B: usize> Mac for HmacMac<B> {
         target.to_mac_key()
     }
 
-    fn init(&mut self, key: &Box<dyn MacKey>) {
+    fn init(&mut self, key: &dyn MacKey) {
         let key = key.try_as_bytes().unwrap();
         let key = key.as_slice();
         self.digest.reset();
@@ -269,7 +269,7 @@ mod tests {
                 )),
                 _ => panic!("Unsupported!"),
             };
-            mac.init(&key_bytes.clone().to_mac_key());
+            mac.init(key_bytes.clone().to_mac_key().as_ref());
             //mac.reset();
             mac.update(&msg_bytes);
             let mut out = vec![0u8; mac.get_mac_size_bits() >> 3];

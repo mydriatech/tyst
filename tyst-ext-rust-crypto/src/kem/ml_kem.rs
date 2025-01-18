@@ -100,8 +100,7 @@ impl ConfinedObjectAsBytes for MlkemDecapsulationKey {
     }
 }
 impl MlkemDecapsulationKey {
-    #[allow(clippy::borrowed_box)]
-    pub fn from_trait_object(algorithm: &MlkemKem, value: &Box<dyn DecapsulationKey>) -> Self {
+    pub fn from_trait_object(algorithm: &MlkemKem, value: &dyn DecapsulationKey) -> Self {
         match algorithm {
             MlkemKem::MlKem512 => {
                 //let encoded = ml_kem::Encoded::<ml_kem::kem::DecapsulationKey<ml_kem::MlKem512Params>>::from_iter(value.encoded().into_iter());
@@ -202,8 +201,7 @@ impl EncapsulationKey for MlkemEncapsulationKey {
     }
 }
 impl MlkemEncapsulationKey {
-    #[allow(clippy::borrowed_box)]
-    pub fn from_trait_object(algorithm: &MlkemKem, value: &Box<dyn EncapsulationKey>) -> Self {
+    pub fn from_trait_object(algorithm: &MlkemKem, value: &dyn EncapsulationKey) -> Self {
         match algorithm {
             MlkemKem::MlKem512 => {
                 //let encoded = ml_kem::Encoded::<ml_kem::kem::DecapsulationKey<ml_kem::MlKem512Params>>::from_iter(value.encoded().into_iter());
@@ -317,13 +315,13 @@ impl Kem for MlkemKem {
     }
     fn encapsulate(
         &mut self,
-        public_key: &Box<dyn EncapsulationKey>,
+        public_key: &dyn EncapsulationKey,
     ) -> Option<(KemCipherText, KemSharedSecret)> {
         MlkemEncapsulationKey::from_trait_object(self, public_key).encapsulate()
     }
     fn decapsulate(
         &mut self,
-        private_key: &Box<dyn DecapsulationKey>,
+        private_key: &dyn DecapsulationKey,
         cipher_text: &KemCipherText,
     ) -> Option<KemSharedSecret> {
         MlkemDecapsulationKey::from_trait_object(self, private_key).decapsulate(cipher_text)
@@ -340,8 +338,8 @@ mod tests {
         let algorithm_name = "ML-KEM-768";
         let mut kem = Box::new(MlkemKem::new(algorithm_name));
         let (public_key, private_key) = kem.key_gen();
-        let (ct, k_send) = kem.encapsulate(&public_key).unwrap();
-        let k_recv = kem.decapsulate(&private_key, &ct).unwrap();
+        let (ct, k_send) = kem.encapsulate(public_key.as_ref()).unwrap();
+        let k_recv = kem.decapsulate(private_key.as_ref(), &ct).unwrap();
         assert_eq!(
             k_recv.as_bytes(),
             k_send.as_bytes(),

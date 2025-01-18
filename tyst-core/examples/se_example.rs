@@ -39,11 +39,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pub_key = pub_key_bytes.to_public_key();
     // Sign a message
     let message = "This will be signed!";
-    let signature = se.sign(&priv_key, message.as_bytes()).unwrap();
+    let signature = se.sign(priv_key.as_ref(), message.as_bytes()).unwrap();
     println!("Message (public):        {message}");
     println!("Signature (b64, public): {}", signature.to_base64());
     // Verify signature
-    let signature_ok = se.verify(&pub_key, &signature, &message.as_bytes());
+    let signature_ok = se.verify(pub_key.as_ref(), &signature, &message.as_bytes());
     println!("Signature verified:      {signature_ok}");
     Ok(())
 }

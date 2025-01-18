@@ -112,8 +112,8 @@ impl ConfinedObjectAsBytes for EddsaPrivateKeyHolder {
         )
     }
 }
-impl From<&Box<dyn PrivateKey>> for EddsaPrivateKeyHolder {
-    fn from(value: &Box<dyn PrivateKey>) -> Self {
+impl From<&dyn PrivateKey> for EddsaPrivateKeyHolder {
+    fn from(value: &dyn PrivateKey) -> Self {
         EddsaPrivateKeyHolder::new(
             ed25519_dalek::pkcs8::DecodePrivateKey::from_pkcs8_der(&value.try_as_bytes().unwrap())
                 .unwrap(),
@@ -143,8 +143,8 @@ impl PublicKey for EddsaPublicKeyHolder {
     }
 }
 
-impl From<&Box<dyn PublicKey>> for EddsaPublicKeyHolder {
-    fn from(public_key: &Box<dyn PublicKey>) -> Self {
+impl From<&dyn PublicKey> for EddsaPublicKeyHolder {
+    fn from(public_key: &dyn PublicKey) -> Self {
         EddsaPublicKeyHolder::new(
             ed25519_dalek::pkcs8::DecodePublicKey::from_public_key_der(
                 &public_key.try_as_spki().unwrap(),
@@ -185,7 +185,7 @@ impl SignatureEngine for EddsaSignatureEngine {
         (Box::new(pub_key), Box::new(priv_key))
     }
 
-    fn sign(&mut self, private_key: &Box<dyn PrivateKey>, data: &[u8]) -> Option<Vec<u8>> {
+    fn sign(&mut self, private_key: &dyn PrivateKey, data: &[u8]) -> Option<Vec<u8>> {
         match self.algorithm_name.as_str() {
             "EdDSA-Ed25519" => {
                 let priv_key = EddsaPrivateKeyHolder::from(private_key).private_key;
@@ -199,12 +199,7 @@ impl SignatureEngine for EddsaSignatureEngine {
         }
     }
 
-    fn verify(
-        &mut self,
-        public_key: &Box<dyn PublicKey>,
-        signature: &[u8],
-        message: &[u8],
-    ) -> bool {
+    fn verify(&mut self, public_key: &dyn PublicKey, signature: &[u8], message: &[u8]) -> bool {
         match self.algorithm_name.as_str() {
             "EdDSA-Ed25519" => {
                 let pub_key = EddsaPublicKeyHolder::from(public_key).public_key;
@@ -229,8 +224,8 @@ mod tests {
         let mut se = Box::new(EddsaSignatureEngine::new(algorithm_name));
         let (public_key, private_key) = se.generate_key_pair();
         let data = b"Hello legacy!";
-        let signature = se.sign(&private_key, data).unwrap();
-        let verified = se.verify(&public_key, &signature, data);
+        let signature = se.sign(private_key.as_ref(), data).unwrap();
+        let verified = se.verify(public_key.as_ref(), &signature, data);
         assert_eq!(
             verified, true,
             "Signature algorithm '{algorithm_name}' failed."
