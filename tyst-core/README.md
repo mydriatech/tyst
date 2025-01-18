@@ -28,8 +28,8 @@ use tyst::Tyst;
 if let Some(mut se) = Tyst::instance().ses().by_name("ML-DSA-87") {
     let (pub_key, priv_key) = se.generate_key_pair();
     let message = "This will be signed!";
-    let signature = se.sign(&priv_key, message.as_bytes()).unwrap();
-    let _ok = se.verify(&pub_key, &signature, &message.as_bytes());
+    let signature = se.sign(priv_key.as_ref(), message.as_bytes()).unwrap();
+    let _ok = se.verify(pub_key.as_ref(), &signature, &message.as_bytes());
 }
 ```
 

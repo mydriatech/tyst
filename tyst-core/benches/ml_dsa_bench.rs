@@ -48,7 +48,7 @@ fn ml_dsa_sign(bench: &mut Bencher) {
                 .ses()
                 .by_name("ML-DSA-87")
                 .unwrap()
-                .sign(&private_key, message),
+                .sign(private_key.as_ref(), message),
         );
     })
 }
@@ -64,11 +64,11 @@ fn ml_dsa_verify(bench: &mut Bencher) {
         .ses()
         .by_name("ML-DSA-87")
         .unwrap()
-        .sign(&private_key, message)
+        .sign(private_key.as_ref(), message)
         .unwrap();
     bench.iter(|| {
         black_box(Tyst::instance().ses().by_name("ML-DSA-87").unwrap().verify(
-            &public_key,
+            public_key.as_ref(),
             &signature,
             message,
         ));

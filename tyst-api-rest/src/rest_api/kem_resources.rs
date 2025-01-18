@@ -305,7 +305,7 @@ pub async fn kem_encapsulate(
         .kems()
         .by_name(&algorithm_name)
         .unwrap()
-        .encapsulate(&public_key)
+        .encapsulate(public_key.as_ref())
     {
         Ok(Json(KemEncapsulationResponse {
             cipher_text_b64: cipher_text.as_bytes(),
@@ -349,7 +349,7 @@ pub async fn kem_decapsulate(
         let private_key: Box<dyn DecapsulationKey> =
             Box::new(DecapsulationKeyHolder::from(&request.decapsulation_key));
         if let Some(shared_secret) = kem.decapsulate(
-            &private_key,
+            private_key.as_ref(),
             &KemCipherText::from(request.cipher_text_b64.clone()),
         ) {
             Ok(Json(KemDecapsulationResponse {

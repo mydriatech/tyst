@@ -175,8 +175,8 @@ impl ConfinedObjectAsBytes for RsaPrivateKeyHolder {
         )
     }
 }
-impl From<&Box<dyn PrivateKey>> for RsaPrivateKeyHolder {
-    fn from(private_key: &Box<dyn PrivateKey>) -> Self {
+impl From<&dyn PrivateKey> for RsaPrivateKeyHolder {
+    fn from(private_key: &dyn PrivateKey) -> Self {
         RsaPrivateKeyHolder::new(
             rsa::pkcs8::DecodePrivateKey::from_pkcs8_der(&private_key.try_as_bytes().unwrap())
                 .unwrap(),
@@ -206,8 +206,8 @@ impl PublicKey for RsaPublicKeyHolder {
     }
 }
 
-impl From<&Box<dyn PublicKey>> for RsaPublicKeyHolder {
-    fn from(public_key: &Box<dyn PublicKey>) -> Self {
+impl From<&dyn PublicKey> for RsaPublicKeyHolder {
+    fn from(public_key: &dyn PublicKey) -> Self {
         RsaPublicKeyHolder::new(
             rsa::pkcs8::DecodePublicKey::from_public_key_der(&public_key.try_as_spki().unwrap())
                 .unwrap(),
@@ -307,7 +307,7 @@ impl SignatureEngine for RsaSignatureEngine {
         (Box::new(pub_key), Box::new(priv_key))
     }
 
-    fn sign(&mut self, private_key: &Box<dyn PrivateKey>, data: &[u8]) -> Option<Vec<u8>> {
+    fn sign(&mut self, private_key: &dyn PrivateKey, data: &[u8]) -> Option<Vec<u8>> {
         let priv_key = RsaPrivateKeyHolder::from(private_key).rsa_private_key;
         match self.algorithm_name.as_str() {
             "RSASSA-PKCS1-v1_5-SHA-384" => {
@@ -337,12 +337,7 @@ impl SignatureEngine for RsaSignatureEngine {
         }
     }
 
-    fn verify(
-        &mut self,
-        public_key: &Box<dyn PublicKey>,
-        signature: &[u8],
-        message: &[u8],
-    ) -> bool {
+    fn verify(&mut self, public_key: &dyn PublicKey, signature: &[u8], message: &[u8]) -> bool {
         let pub_key = RsaPublicKeyHolder::from(public_key).rsa_public_key;
         match self.algorithm_name.as_str() {
             "RSASSA-PKCS1-v1_5-SHA-384" => {
@@ -382,8 +377,8 @@ mod tests {
         let mut se = Box::new(RsaSignatureEngine::new(algorithm_name, TEST_MODULUS_LENGTH));
         let (public_key, private_key) = se.generate_key_pair();
         let data = b"Hello legacy!";
-        let signature = se.sign(&private_key, data).unwrap();
-        let verified = se.verify(&public_key, &signature, data);
+        let signature = se.sign(private_key.as_ref(), data).unwrap();
+        let verified = se.verify(public_key.as_ref(), &signature, data);
         assert_eq!(
             verified, true,
             "RSA signature algorithm '{algorithm_name}' failed."
@@ -397,8 +392,8 @@ mod tests {
         let mut se = Box::new(RsaSignatureEngine::new(algorithm_name, TEST_MODULUS_LENGTH));
         let (public_key, private_key) = se.generate_key_pair();
         let data = b"Hello legacy!";
-        let signature = se.sign(&private_key, data).unwrap();
-        let verified = se.verify(&public_key, &signature, data);
+        let signature = se.sign(private_key.as_ref(), data).unwrap();
+        let verified = se.verify(public_key.as_ref(), &signature, data);
         assert_eq!(
             verified, true,
             "RSA signature algorithm '{algorithm_name}' failed."

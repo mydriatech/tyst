@@ -71,8 +71,7 @@ pub trait Mac: Send {
     /// Initialize.
     ///
     /// Must be invoked before [`update()`](Self::update()) and [`finalize()`](Self::finalize()).
-    #[allow(clippy::borrowed_box)]
-    fn init(&mut self, key: &Box<dyn MacKey>);
+    fn init(&mut self, key: &dyn MacKey);
 
     /// Ingest/absorb the `data` into the MAC.
     fn update(&mut self, data: &[u8]);
@@ -91,8 +90,7 @@ pub trait Mac: Send {
 
     /// Convinience method for initializing, ingesting the provided data and
     /// returning the output state (MAC) in a single invocation.
-    #[allow(clippy::borrowed_box)]
-    fn mac(&mut self, key: &Box<dyn MacKey>, data: &[u8]) -> Vec<u8> {
+    fn mac(&mut self, key: &dyn MacKey, data: &[u8]) -> Vec<u8> {
         self.init(key);
         self.update(data);
         let mut out = vec![0u8; self.get_mac_size_bits() >> 3];

@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ct = {
         let ek = ek.to_decapsulation_key();
         let mut kem = Tyst::instance().kems().by_name(algorithm).unwrap();
-        let (ct, ss) = kem.encapsulate(&ek).unwrap();
+        let (ct, ss) = kem.encapsulate(ek.as_ref()).unwrap();
         println!(
             "Cipher text (b64, public):    {}",
             ct.as_bytes().to_base64()
@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     // Derive the same shared secret "locally" using the decapsulation key
     let ct = KemCipherText::from(ct);
-    let ss = kem.decapsulate(&dk, &ct).unwrap();
+    let ss = kem.decapsulate(dk.as_ref(), &ct).unwrap();
     println!(
         "Shared secret (b64, secret):  {} [local]",
         ss.as_bytes().to_base64()

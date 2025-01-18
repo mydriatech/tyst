@@ -195,7 +195,7 @@ pub async fn mac(path: Path<String>, request: Json<MacRequest>) -> Result<impl R
     ) {
         let key: Box<dyn MacKey> = Box::new(MacKeyHolder::from(&request.key));
         Ok(Json(MacResponse {
-            mac_b64: mac.mac(&key, &request.message_b64),
+            mac_b64: mac.mac(key.as_ref(), &request.message_b64),
         }))
     } else {
         Err(ErrorBadRequest("Unable to find any matching MAC."))

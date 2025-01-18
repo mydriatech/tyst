@@ -135,7 +135,6 @@ impl KemSharedSecret {
 }
 
 /// Key Encapsulation Mechanism (KEM)
-#[allow(clippy::borrowed_box)]
 pub trait Kem: Send {
     /// Generate a new key pair
     fn key_gen(&mut self) -> (Box<dyn EncapsulationKey>, Box<dyn DecapsulationKey>);
@@ -143,13 +142,13 @@ pub trait Kem: Send {
     /// Generate a new shared secret, encapsulate the secret and return both versions.
     fn encapsulate(
         &mut self,
-        public_key: &Box<dyn EncapsulationKey>,
+        public_key: &dyn EncapsulationKey,
     ) -> Option<(KemCipherText, KemSharedSecret)>;
 
     /// Derive the shared secret by decapsulating the encapsulated cipher text version.
     fn decapsulate(
         &mut self,
-        private_key: &Box<dyn DecapsulationKey>,
+        private_key: &dyn DecapsulationKey,
         cipher_text: &KemCipherText,
     ) -> Option<KemSharedSecret>;
 }

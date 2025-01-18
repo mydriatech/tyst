@@ -119,8 +119,7 @@ impl ConfinedObjectAsBytes for EcdsaPrivateKeyHolder {
     }
 }
 impl EcdsaPrivateKeyHolder {
-    #[allow(clippy::borrowed_box)]
-    fn from_curve(curve_name: &str, private_key: &Box<dyn PrivateKey>) -> Self {
+    fn from_curve(curve_name: &str, private_key: &dyn PrivateKey) -> Self {
         match curve_name {
             "secp256k1" => Self::K256 {
                 private_key: k256::pkcs8::DecodePrivateKey::from_pkcs8_der(
@@ -166,8 +165,7 @@ impl PublicKey for EcdsaPublicKeyHolder {
 }
 
 impl EcdsaPublicKeyHolder {
-    #[allow(clippy::borrowed_box)]
-    fn from_curve(curve_name: &str, public_key: &Box<dyn PublicKey>) -> Self {
+    fn from_curve(curve_name: &str, public_key: &dyn PublicKey) -> Self {
         match curve_name {
             "secp256k1" => Self::K256 {
                 public_key: k256::pkcs8::DecodePublicKey::from_public_key_der(
@@ -213,7 +211,7 @@ impl SignatureEngine for EcdsaSignatureEngine {
         }
     }
 
-    fn sign(&mut self, private_key: &Box<dyn PrivateKey>, data: &[u8]) -> Option<Vec<u8>> {
+    fn sign(&mut self, private_key: &dyn PrivateKey, data: &[u8]) -> Option<Vec<u8>> {
         match self.algorithm_name.as_str() {
             "ECDSA-with-SHA-256" => {
                 match EcdsaPrivateKeyHolder::from_curve(self.curve_name.as_str(), private_key) {
@@ -249,12 +247,7 @@ impl SignatureEngine for EcdsaSignatureEngine {
         }
     }
 
-    fn verify(
-        &mut self,
-        public_key: &Box<dyn PublicKey>,
-        signature: &[u8],
-        message: &[u8],
-    ) -> bool {
+    fn verify(&mut self, public_key: &dyn PublicKey, signature: &[u8], message: &[u8]) -> bool {
         match self.algorithm_name.as_str() {
             "ECDSA-with-SHA-256" => {
                 match EcdsaPublicKeyHolder::from_curve(self.curve_name.as_str(), public_key) {
@@ -301,8 +294,8 @@ mod tests {
         let mut se = Box::new(EcdsaSignatureEngine::new(algorithm_name, curve_name));
         let (public_key, private_key) = se.generate_key_pair();
         let data = b"Hello legacy!";
-        let signature = se.sign(&private_key, data).unwrap();
-        let verified = se.verify(&public_key, &signature, data);
+        let signature = se.sign(private_key.as_ref(), data).unwrap();
+        let verified = se.verify(public_key.as_ref(), &signature, data);
         assert_eq!(
             verified, true,
             "Signature algorithm '{algorithm_name}' using curve '{curve_name}' failed."

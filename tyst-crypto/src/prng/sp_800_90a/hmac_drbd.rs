@@ -82,14 +82,14 @@ impl HmacDrbd {
 
     #[doc(hidden)]
     fn hmac_drbg_update_func(&mut self, seed_material: Option<&[u8]>, v_value: u8) {
-        self.mac.init(&self.k.clone().to_mac_key());
+        self.mac.init(self.k.clone().to_mac_key().as_ref());
         self.mac.update(&self.v);
         self.mac.update(&[v_value]);
         if let Some(seed_material) = seed_material {
             self.mac.update(seed_material);
         }
         self.mac.finalize(&mut self.k);
-        self.mac.init(&self.k.clone().to_mac_key());
+        self.mac.init(self.k.clone().to_mac_key().as_ref());
         self.mac.update(&self.v);
         self.mac.finalize(&mut self.v);
     }
@@ -129,7 +129,7 @@ impl Drbg for HmacDrbd {
             &mut vec![0u8; output.len()]
         };
         let m = output.len() / self.v.len();
-        self.mac.init(&self.k.clone().to_mac_key());
+        self.mac.init(self.k.clone().to_mac_key().as_ref());
         let v_len = self.v.len();
         let rv_len = output.len();
         for i in 0..m {
