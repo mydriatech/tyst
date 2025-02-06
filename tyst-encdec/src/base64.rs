@@ -145,18 +145,90 @@ pub fn encode(data: &[u8]) -> String {
     ret
 }
 
+/// Base64 decode using standard characters (`A-Z-a-z0-9+/`) and padding (`=`).
+pub fn decode(data: &str) -> Vec<u8> {
+    // Alloc max use
+    let data = data.trim().as_bytes();
+    let mut ret = Vec::with_capacity(data.len() * 6 / 8);
+    // each 8-bit char represents 6 bits of the original data
+    for offset in (0..data.len()).step_by(4) {
+        let mut out = [64; 3];
+        for (i, byte) in data[offset..].iter().take(4).enumerate() {
+            let byte = match byte {
+                // +
+                0x2b => 62,
+                // /
+                0x2f => 63,
+                // 0-9
+                0x30..=0x39 => byte - 0x30 + 26 * 2,
+                // =
+                0x3d => 0,
+                // A-Z
+                0x41..=0x5a => byte - 0x41,
+                // a-z
+                0x61..=0x7a => byte - 0x61 + 26,
+                // Unknown garbage
+                c => panic!("Unknown garbage in input: '{c}'"),
+            };
+            match i {
+                0 => {
+                    // 0x3f: 0011 1111
+                    out[0] = byte << 2;
+                }
+                1 => {
+                    // 0x30: 0011 0000
+                    out[0] |= (byte & 0x30) >> 4;
+                    // 0x0f: 0000 1111
+                    out[1] = (byte & 0x0f) << 4;
+                }
+                2 => {
+                    // 0x3c: 0011 1100
+                    out[1] |= (byte & 0x3c) >> 2;
+                    // 0x03: 0000 0011
+                    out[2] = (byte & 0x03) << 6;
+                }
+                3 => {
+                    // 0x3f: 0011 1111
+                    out[2] |= byte;
+                }
+                _ => panic!(),
+            }
+        }
+        ret.extend(out);
+    }
+    // Remove padding from output
+    if data.len() > 1 && data[data.len() - 1] == 0x3d {
+        ret.pop();
+        if data.len() > 2 && data[data.len() - 2] == 0x3d {
+            ret.pop();
+        }
+    }
+    ret
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn sanity_check() {
+    fn sanity_check_encode() {
         //crate::test::common::init_logger();
         let expected = "TXlkcmlhVGVjaCBBQgo=";
         assert_eq!(
             encode(b"MydriaTech AB\n".as_slice()).as_str(),
             expected,
             "Basic base64 encoder is broken."
+        );
+    }
+
+    #[test]
+    fn sanity_check_decode() {
+        //crate::test::common::init_logger();
+        let expected = b"MydriaTech AB\n".as_slice();
+        assert_eq!(
+            &decode("TXlkcmlhVGVjaCBBQgo="),
+            expected,
+            "Basic base64 decoder is broken."
         );
     }
 }
