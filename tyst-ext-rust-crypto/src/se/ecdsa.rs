@@ -19,7 +19,6 @@
 //! [RustCrypto: Signatures](https://github.com/RustCrypto/signatures/).
 
 use std::error::Error;
-
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -143,6 +142,9 @@ enum EcdsaPublicKeyHolder {
     K256 {
         public_key: k256::ecdsa::VerifyingKey,
     },
+    P256 {
+        public_key: p256::ecdsa::VerifyingKey,
+    },
     P384 {
         public_key: p384::ecdsa::VerifyingKey,
     },
@@ -153,6 +155,9 @@ impl PublicKey for EcdsaPublicKeyHolder {
         Ok(match self {
             Self::K256 { public_key } => {
                 k256::pkcs8::EncodePublicKey::to_public_key_der(public_key)
+            }
+            Self::P256 { public_key } => {
+                p256::pkcs8::EncodePublicKey::to_public_key_der(public_key)
             }
             Self::P384 { public_key } => {
                 p384::pkcs8::EncodePublicKey::to_public_key_der(public_key)
@@ -165,10 +170,32 @@ impl PublicKey for EcdsaPublicKeyHolder {
 }
 
 impl EcdsaPublicKeyHolder {
-    fn from_curve(curve_name: &str, public_key: &dyn PublicKey) -> Self {
+    fn from_public_key(public_key: &dyn PublicKey) -> Self {
+        let spki = rasn::der::decode::<rasn_pkix::SubjectPublicKeyInfo>(
+            &public_key.try_as_spki().unwrap(),
+        )
+        .unwrap();
+        // At this point spki.algorithm.algorithm should match 1.2.840.10045.2.1
+        // Assume it is a named curve or fail
+        let ec_params = spki.algorithm.parameters.unwrap().into_bytes();
+        let ec_params_named_curve = rasn::der::decode::<rasn::types::ObjectIdentifier>(&ec_params)
+            .unwrap()
+            .to_vec();
+        let curve_name = match ec_params_named_curve.as_slice() {
+            &[1, 3, 132, 0, 10] => "secp256k1",
+            &[1, 2, 840, 10045, 3, 1, 7] => "P-256",
+            &[1, 3, 132, 0, 34] => "P-384",
+            _oid => "",
+        };
         match curve_name {
             "secp256k1" => Self::K256 {
                 public_key: k256::pkcs8::DecodePublicKey::from_public_key_der(
+                    &public_key.try_as_spki().unwrap(),
+                )
+                .unwrap(),
+            },
+            "P-256" => Self::P256 {
+                public_key: p256::pkcs8::DecodePublicKey::from_public_key_der(
                     &public_key.try_as_spki().unwrap(),
                 )
                 .unwrap(),
@@ -179,8 +206,26 @@ impl EcdsaPublicKeyHolder {
                 )
                 .unwrap(),
             },
-            bad_curve => panic!("Unsupported curve '{bad_curve}'."),
+            _unsupported_curve => panic!(
+                "Unsupported curve '{}'.",
+                &ec_params_named_curve
+                    .iter()
+                    .map(|c| c.to_string())
+                    .collect::<Vec<_>>()
+                    .join(".")
+            ),
         }
+    }
+}
+
+impl std::fmt::Display for EcdsaPublicKeyHolder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let name = match self {
+            Self::K256 { public_key: _ } => "K256",
+            Self::P256 { public_key: _ } => "P256",
+            Self::P384 { public_key: _ } => "P384",
+        };
+        write!(f, "{name}")
     }
 }
 
@@ -218,7 +263,9 @@ impl SignatureEngine for EcdsaSignatureEngine {
                     EcdsaPrivateKeyHolder::K256 { private_key } => {
                         let signature: k256::ecdsa::Signature =
                             k256::ecdsa::signature::Signer::sign(&private_key, data);
-                        let bytes = k256::ecdsa::signature::SignatureEncoding::to_vec(&signature);
+                        //let bytes = k256::ecdsa::signature::SignatureEncoding::to_vec(&signature);
+                        let der = signature.to_der();
+                        let bytes = k256::ecdsa::signature::SignatureEncoding::to_vec(&der);
                         Some(bytes)
                     }
                     _ => panic!(
@@ -232,7 +279,10 @@ impl SignatureEngine for EcdsaSignatureEngine {
                     EcdsaPrivateKeyHolder::P384 { private_key } => {
                         let signature: p384::ecdsa::Signature =
                             p384::ecdsa::signature::Signer::sign(&private_key, data);
-                        let bytes = p384::ecdsa::signature::SignatureEncoding::to_vec(&signature);
+
+                        //let bytes = p384::ecdsa::signature::SignatureEncoding::to_vec(&signature);
+                        let der = signature.to_der();
+                        let bytes = p384::ecdsa::signature::SignatureEncoding::to_vec(&der);
                         Some(bytes)
                     }
                     _ => panic!(
@@ -249,32 +299,44 @@ impl SignatureEngine for EcdsaSignatureEngine {
 
     fn verify(&mut self, public_key: &dyn PublicKey, signature: &[u8], message: &[u8]) -> bool {
         match self.algorithm_name.as_str() {
-            "ECDSA-with-SHA-256" => {
-                match EcdsaPublicKeyHolder::from_curve(self.curve_name.as_str(), public_key) {
-                    EcdsaPublicKeyHolder::K256 { public_key } => {
-                        let signature = k256::ecdsa::Signature::try_from(signature).unwrap();
-                        k256::ecdsa::signature::Verifier::verify(&public_key, message, &signature)
-                            .is_ok()
-                    }
-                    _ => panic!(
-                        "Curve '{}' is not suitable for '{}'.",
-                        self.curve_name, self.algorithm_name
-                    ),
+            "ECDSA-with-SHA-256" => match EcdsaPublicKeyHolder::from_public_key(public_key) {
+                EcdsaPublicKeyHolder::K256 { public_key } => {
+                    //let signature = k256::ecdsa::Signature::try_from(signature).unwrap();
+                    let signature = ecdsa::der::Signature::from_bytes(signature).unwrap();
+                    k256::ecdsa::signature::Verifier::verify(&public_key, message, &signature)
+                        .is_ok()
                 }
-            }
-            "ECDSA-with-SHA-384" => {
-                match EcdsaPublicKeyHolder::from_curve(self.curve_name.as_str(), public_key) {
-                    EcdsaPublicKeyHolder::P384 { public_key } => {
-                        let signature = p384::ecdsa::Signature::try_from(signature).unwrap();
-                        p384::ecdsa::signature::Verifier::verify(&public_key, message, &signature)
-                            .is_ok()
-                    }
-                    _ => panic!(
-                        "Curve '{}' is not suitable for '{}'.",
-                        self.curve_name, self.algorithm_name
-                    ),
+                EcdsaPublicKeyHolder::P256 { public_key } => {
+                    //let signature = p256::ecdsa::Signature::try_from(signature).unwrap();
+                    let signature = ecdsa::der::Signature::from_bytes(signature).unwrap();
+                    p256::ecdsa::signature::Verifier::verify(&public_key, message, &signature)
+                        .is_ok()
                 }
-            }
+                ecpkh => panic!(
+                    "Curve '{ecpkh}' is not suitable for '{}'.",
+                    self.algorithm_name
+                ),
+            },
+            "ECDSA-with-SHA-384" => match EcdsaPublicKeyHolder::from_public_key(public_key) {
+                EcdsaPublicKeyHolder::K256 { public_key } => {
+                    //let signature = k256::ecdsa::Signature::try_from(signature).unwrap();
+                    let signature = ecdsa::der::Signature::from_bytes(signature).unwrap();
+                    k256::ecdsa::signature::Verifier::verify(&public_key, message, &signature)
+                        .is_ok()
+                }
+                EcdsaPublicKeyHolder::P256 { public_key } => {
+                    //let signature = p256::ecdsa::Signature::try_from(signature).unwrap();
+                    let signature = ecdsa::der::Signature::from_bytes(signature).unwrap();
+                    p256::ecdsa::signature::Verifier::verify(&public_key, message, &signature)
+                        .is_ok()
+                }
+                EcdsaPublicKeyHolder::P384 { public_key } => {
+                    //let signature = p384::ecdsa::Signature::try_from(signature).unwrap();
+                    let signature = ecdsa::der::Signature::from_bytes(signature).unwrap();
+                    p384::ecdsa::signature::Verifier::verify(&public_key, message, &signature)
+                        .is_ok()
+                }
+            },
             bad_alg => {
                 panic!("Unsupported signature algorithm '{bad_alg}'.");
             }

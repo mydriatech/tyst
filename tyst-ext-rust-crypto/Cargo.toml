@@ -15,7 +15,8 @@ env_logger = { version = "0.11.1", default-features = false, features = [] }
 
 rand = { version = "0.8", default-features = true, features = [] }
 rsa = { version = "0.9", default-features = true, features = ["sha2"] }
-ecdsa = { version = "0.16", default-features = true, features = [] }
+ecdsa = { version = "0.16", default-features = true, features = ["der"] }
+p256 = { version = "0.13", default-features = true, features = [] }
 p384 = { version = "0.13", default-features = true, features = [] }
 k256 = { version = "0.13", default-features = true, features = [] }
 ed25519-dalek = { version = "2.1", default-features = true, features = ["pkcs8", "rand_core"] }
