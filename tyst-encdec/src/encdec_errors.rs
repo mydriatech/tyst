@@ -15,12 +15,34 @@
     limitations under the License.
 */
 
-#![forbid(unsafe_code)]
-#![warn(missing_docs)]
-#![doc = include_str!("../README.md")]
+//! Encoding and decoding errors.
 
-pub mod base64;
-mod encdec_errors;
-pub mod hex;
+use std::error::Error;
+use std::fmt;
 
-pub use encdec_errors::DecodingError;
+/// Decoding error
+#[derive(Debug, Default)]
+pub struct DecodingError {
+    msg: Option<String>,
+}
+
+impl DecodingError {
+    /// Create a new instance with an error message.
+    pub fn with_msg(msg: &str) -> Self {
+        Self {
+            msg: Some(msg.to_string()),
+        }
+    }
+}
+
+impl fmt::Display for DecodingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if let Some(msg) = &self.msg {
+            write!(f, "DecodingError {}", msg)
+        } else {
+            write!(f, "DecodingError")
+        }
+    }
+}
+
+impl Error for DecodingError {}

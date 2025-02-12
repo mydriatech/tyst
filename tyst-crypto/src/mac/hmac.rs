@@ -249,8 +249,8 @@ mod tests {
     #[test]
     fn test_vectors() {
         crate::test::common::init_logger();
-        let key_bytes = tyst_encdec::hex::decode(KEY);
-        let msg_bytes = tyst_encdec::hex::decode(MESSAGE);
+        let key_bytes = tyst_encdec::hex::decode(KEY).unwrap();
+        let msg_bytes = tyst_encdec::hex::decode(MESSAGE).unwrap();
         log::info!("message: {}", String::from_utf8(msg_bytes.clone()).unwrap());
         for item in OUTPUTS {
             //let mut mac = HmacMacFactory::default().new_by_name(item.0, );

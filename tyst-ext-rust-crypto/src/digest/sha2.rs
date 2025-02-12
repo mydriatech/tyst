@@ -229,7 +229,7 @@ mod tests {
         crate::test::common::init_logger();
         for (algorithm_name, msg, expected_digest_as_hex) in TEST_VECTOR.iter().cloned() {
             let hash_as_hex = &tyst_encdec::hex::encode(
-                &Sha2Digest::new(algorithm_name).hash(&tyst_encdec::hex::decode(msg)),
+                &Sha2Digest::new(algorithm_name).hash(&tyst_encdec::hex::decode(msg).unwrap()),
             );
             assert_eq!(
                 hash_as_hex, expected_digest_as_hex,

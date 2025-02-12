@@ -56,7 +56,7 @@ fn test_digest_sha3_244() {
             .digests()
             .by_oid("2.16.840.1.101.3.4.2.7")
             .unwrap()
-            .hash(&tyst_encdec::hex::decode(msg)),
+            .hash(&tyst_encdec::hex::decode(msg).unwrap()),
     );
     assert_eq!(
         hash_as_hex, "6b4e03423667dbb73b6e15454f0eb1abd4597f9a1b078e3f5b5a6bc7",
@@ -67,7 +67,7 @@ fn test_digest_sha3_244() {
             .digests()
             .by_name("SHA3-224")
             .unwrap()
-            .hash(&tyst_encdec::hex::decode(msg)),
+            .hash(&tyst_encdec::hex::decode(msg).unwrap()),
     );
     assert_eq!(
         hash_as_hex, "6b4e03423667dbb73b6e15454f0eb1abd4597f9a1b078e3f5b5a6bc7",
@@ -84,7 +84,7 @@ fn test_digest_keccak_384() {
             .digests()
             .by_name("Keccak-384")
             .unwrap()
-            .hash(&tyst_encdec::hex::decode(msg)),
+            .hash(&tyst_encdec::hex::decode(msg).unwrap()),
     );
     assert_eq!(
         hash_as_hex, "2c23146a63a29acf99e73b88f8c24eaa7dc60aa771780ccc006afbfa8fe2479b2dd2b21362337441ac12b515911957ff",
@@ -101,7 +101,7 @@ fn test_digest_shake256() {
             .digests()
             .by_name("SHAKE256")
             .unwrap()
-            .hash(&tyst_encdec::hex::decode(msg)),
+            .hash(&tyst_encdec::hex::decode(msg).unwrap()),
     );
     assert_eq!(
         hash_as_hex, "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be",
@@ -120,8 +120,8 @@ fn test_prng_hmac_sha3_512() {
             .by_oid("2.16.840.1.101.3.4.2.16")
             .unwrap()
             .mac(
-                tyst_encdec::hex::decode(key).to_mac_key().as_ref(),
-                &tyst_encdec::hex::decode(msg),
+                tyst_encdec::hex::decode(key).unwrap().to_mac_key().as_ref(),
+                &tyst_encdec::hex::decode(msg).unwrap(),
             ),
     );
     assert_eq!(

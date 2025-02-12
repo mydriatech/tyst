@@ -166,7 +166,7 @@ mod tests {
         for (bit_length, msg, expected_digest_as_hex) in TEST_VECTOR.iter().cloned() {
             let hash_as_hex = &tyst_encdec::hex::encode(
                 &ShakeDigest::new(bit_length, Some(bit_length * 2))
-                    .hash(&tyst_encdec::hex::decode(msg)),
+                    .hash(&tyst_encdec::hex::decode(msg).unwrap()),
             );
             assert_eq!(
                 hash_as_hex.len()*4, bit_length*2,
