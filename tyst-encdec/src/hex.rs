@@ -17,6 +17,8 @@
 
 //! Hexadecimal encoding and decoding
 
+use crate::DecodingError;
+
 #[doc(hidden)]
 const CHARS_HEX_LOWERCASE: [char; 16] = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
@@ -54,24 +56,29 @@ pub fn encode(data: &[u8]) -> String {
 
 Assumes a well formed ascii hex string with even length
  */
-pub fn decode(data: &str) -> Vec<u8> {
-    assert!(data.len() % 2 == 0);
+pub fn decode(data: &str) -> Result<Vec<u8>, DecodingError> {
+    if data.len() % 2 != 0 {
+        DecodingError::with_msg("Even number of hex chars expected.");
+    }
     let data_bytes = data.as_bytes();
-    (0..data.len())
+    Ok((0..data.len())
         .step_by(2)
-        .map(|i| quartet_from_char(data_bytes[i]) << 4 | quartet_from_char(data_bytes[i + 1]))
-        .collect::<Vec<_>>()
+        .map(|i| {
+            quartet_from_char(data_bytes[i]).unwrap() << 4
+                | quartet_from_char(data_bytes[i + 1]).unwrap()
+        })
+        .collect::<Vec<_>>())
 }
 
 #[doc(hidden)]
 #[inline]
-fn quartet_from_char(ascii_char: u8) -> u8 {
+fn quartet_from_char(ascii_char: u8) -> Result<u8, DecodingError> {
     match ascii_char {
-        0x30..=0x39 => ascii_char - 0x30,
-        0x41..=0x46 => ascii_char - 0x41 + 0x0a,
-        0x61..=0x66 => ascii_char - 0x61 + 0x0a,
-        c => {
-            panic!("Char '{c:x}' is not valid hex.");
-        }
+        0x30..=0x39 => Ok(ascii_char - 0x30),
+        0x41..=0x46 => Ok(ascii_char - 0x41 + 0x0a),
+        0x61..=0x66 => Ok(ascii_char - 0x61 + 0x0a),
+        c => Err(DecodingError::with_msg(&format!(
+            "Char '{c:x}' is not valid hex."
+        ))),
     }
 }

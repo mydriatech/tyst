@@ -187,7 +187,7 @@ mod tests {
         crate::test::common::init_logger();
         for (bit_length, msg, expected_digest_as_hex) in TEST_VECTOR.iter().cloned() {
             let hash_as_hex = &tyst_encdec::hex::encode(
-                &Sha3Digest::new(bit_length).hash(&tyst_encdec::hex::decode(msg)),
+                &Sha3Digest::new(bit_length).hash(&tyst_encdec::hex::decode(msg).unwrap()),
             );
             assert_eq!(
                 hash_as_hex.len()*4, bit_length,

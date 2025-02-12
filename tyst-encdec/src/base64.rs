@@ -18,6 +18,8 @@
 //! [RFC4648](https://datatracker.ietf.org/doc/html/rfc4648#section-4) base 64
 //! encoding
 
+use crate::DecodingError;
+
 #[doc(hidden)]
 const CHAR_PADDING: char = '=';
 
@@ -146,7 +148,7 @@ pub fn encode(data: &[u8]) -> String {
 }
 
 /// Base64 decode using standard characters (`A-Z-a-z0-9+/`) and padding (`=`).
-pub fn decode(data: &str) -> Vec<u8> {
+pub fn decode(data: &str) -> Result<Vec<u8>, DecodingError> {
     // Alloc max use
     let data = data.trim().as_bytes();
     let mut ret = Vec::with_capacity(data.len() * 6 / 8);
@@ -168,7 +170,11 @@ pub fn decode(data: &str) -> Vec<u8> {
                 // a-z
                 0x61..=0x7a => byte - 0x61 + 26,
                 // Unknown garbage
-                c => panic!("Unknown garbage in input: '{c}'"),
+                c => {
+                    return Err(DecodingError::with_msg(&format!(
+                        "Unknown garbage in input: '{c}'"
+                    )))
+                }
             };
             match i {
                 0 => {
@@ -191,7 +197,11 @@ pub fn decode(data: &str) -> Vec<u8> {
                     // 0x3f: 0011 1111
                     out[2] |= byte;
                 }
-                _ => panic!(),
+                i => {
+                    return Err(DecodingError::with_msg(&format!(
+                        "This should never happen. Index was '{i}'."
+                    )))
+                }
             }
         }
         ret.extend(out);
@@ -203,7 +213,7 @@ pub fn decode(data: &str) -> Vec<u8> {
             ret.pop();
         }
     }
-    ret
+    Ok(ret)
 }
 
 #[cfg(test)]
@@ -226,7 +236,7 @@ mod tests {
         //crate::test::common::init_logger();
         let expected = b"MydriaTech AB\n".as_slice();
         assert_eq!(
-            &decode("TXlkcmlhVGVjaCBBQgo="),
+            &decode("TXlkcmlhVGVjaCBBQgo=").unwrap(),
             expected,
             "Basic base64 decoder is broken."
         );
