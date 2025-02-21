@@ -15,22 +15,18 @@ name = "openapi"
 test = false
 bench = false
 
-[dev-dependencies]
-# HTTP client lib used in examples and tests
-ureq = { version = "2.10", default-features = true, features = ["json"] }
-
 [dependencies]
 tyst_api_rest_health = { path = "../tyst-api-rest-health", default-features = true, features = [] }
 tyst = { path = "../tyst-core", default-features = true, features = [] }
 
 # Async and concurrency
 tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "signal"] }
-crossbeam-skiplist = { version = "0.1", default-features = true }
+crossbeam-skiplist = { workspace = true, features = [] }
 futures = { version = "0.3", default-features = false, features = ["std", "async-await"] }
 
-# Logging
-log = { version = "0.4", default-features = false, features = ["release_max_level_debug"] }
-env_logger = { version = "0.11.1", default-features = false, features = [] }
+# Logging and tracing
+log = { workspace = true, features = [] }
+env_logger = { workspace = true, features = [] }
 
 # Config and platform info
 config = { version = "0.14", default-features = false, features = ["json"] }
@@ -42,3 +38,7 @@ utoipa = { version = "5", features = ["actix_extras"] }
 serde = { version = "1.0", default-features = false, features = ["std"] }
 serde_json = "1.0"
 serde_with = { version = "3.11", default-features = true, features = ["base64"] }
+
+[dev-dependencies]
+# HTTP client lib used in examples and tests
+ureq = { version = "2.10", default-features = true, features = ["json"] }

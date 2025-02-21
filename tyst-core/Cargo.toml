@@ -19,10 +19,11 @@ tyst_crypto = { path = "../tyst-crypto", optional = true }
 tyst_ext_rust_crypto = { path = "../tyst-ext-rust-crypto", optional = true }
 tyst_encdec = { path = "../tyst-encdec" }
 
-log = { version = "0.4", default-features = false, features = ["release_max_level_debug"] }
-env_logger = { version = "0.11.1", default-features = false, features = [] }
+# Logging and tracing
+log = { workspace = true, features = [] }
+env_logger = { workspace = true, features = [] }
 
-crossbeam-skiplist = { version = "0.1", default-features = true }
+crossbeam-skiplist = { workspace = true, features = [] }
 
 # Rust nightly benchmark port to stable
 # This should be possible to move to dev-deps

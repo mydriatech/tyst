@@ -10,15 +10,16 @@ license = "Apache-2.0 WITH FWM-Exception-1.0.0"
 tyst_traits = { path = "../tyst-traits" }
 tyst_encdec = { path = "../tyst-encdec" }
 
-log = { version = "0.4", default-features = false, features = ["release_max_level_debug"] }
-env_logger = { version = "0.11.1", default-features = false, features = [] }
+# Logging and tracing
+log = { workspace = true, features = [] }
+env_logger = { workspace = true, features = [] }
 
 getrandom = { version = "0.2", default-features = false, features = [] }
 constant_time_eq = { version = "0.3", default-features = false, features = [] }
 
-# https://docs.rs/rasn/latest/rasn/
-rasn = { version = "0.22", default-features = false, features = []  }
-rasn-pkix = { version = "0.22", default-features = false, features = []  }
+# ASN.1
+rasn = { workspace = true, features = [] }
+rasn-pkix = { workspace = true, features = [] }
 
 [dev-dependencies]
 # Parsing of test vectors
