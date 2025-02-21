@@ -6,6 +6,6 @@ description = "TYST Traits and Common Objects"
 license = "Apache-2.0 WITH FWM-Exception-1.0.0"
 
 [dependencies]
-# https://docs.rs/rasn/latest/rasn/
-rasn = { version = "0.22", default-features = false, features = []  }
-rasn-pkix = { version = "0.22", default-features = false, features = []  }
+# ASN.1
+rasn = { workspace = true, features = [] }
+rasn-pkix = { workspace = true, features = [] }

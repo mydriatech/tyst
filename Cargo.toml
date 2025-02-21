@@ -33,3 +33,16 @@ codegen-units = 1
 #debug = 1
 # Keep debug!() and trace!()
 #debug-logging=true
+
+[workspace.dependencies]
+
+# Logging
+log = { version = "0.4", default-features = false, features = ["release_max_level_debug"] }
+env_logger = { version = "0.11.1", default-features = false, features = [] }
+
+# ASN.1 https://docs.rs/rasn/latest/rasn/
+rasn = { version = "0.24", default-features = false, features = [] }
+rasn-pkix = { version = "0.24", default-features = false, features = [] }
+
+# Async and concurrency
+crossbeam-skiplist = { version = "0.1", default-features = true, features = [] }
