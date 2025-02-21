@@ -3,7 +3,7 @@ name = "tyst"
 version = "0.0.0"
 edition = "2021"
 description = "TYST Core"
-license = "Apache-2.0 WITH FWM-Exception-1.0.0"
+license = "Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0"
 
 [[bench]]
 name = "all"

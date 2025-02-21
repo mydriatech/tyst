@@ -21,10 +21,11 @@ allow = [
     #"MPL-2.0",
     "Unicode-3.0",
     #"Unlicense",
+    # Requires SPDX 3
+    #"Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0",
 ]
 confidence-threshold = 0.8
 exceptions = [
-    #{ allow = ["Apache-2.0 WITH FWM-Exception-1.0.0"], crate = "gh-playground" },
     #{ allow = ["BSD-3-Clause"], crate = "encoding_rs" },
     #{ allow = ["Unicode-DFS-2016"], crate = "unicode-ident" },
     #{ allow = ["OpenSSL"], crate = "ring" },
