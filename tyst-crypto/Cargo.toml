@@ -3,7 +3,7 @@ name = "tyst_crypto"
 version = "0.0.0"
 edition = "2021"
 description = "TYST Crypto Algorithm Implementations"
-license = "Apache-2.0 WITH FWM-Exception-1.0.0"
+license = "Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0"
 
 [dependencies]
 
