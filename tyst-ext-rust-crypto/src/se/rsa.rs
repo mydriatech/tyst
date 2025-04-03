@@ -18,12 +18,10 @@
 //! External implementation of RSASSA from
 //! [RustCrypto: Signatures](https://github.com/RustCrypto/signatures/).
 
-use std::error::Error;
+mod asn1_rsa;
 
-use rasn::prelude::*;
-use rasn::types::Integer;
-use rasn::AsnType;
-use rasn::Encode;
+use self::asn1_rsa::RsassaPssParams;
+use std::error::Error;
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -33,10 +31,6 @@ use tyst_traits::se::PublicKey;
 use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
 use tyst_traits::CryptoRegistry;
-
-// {iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) sha384WithRSAEncryption(12)}
-//const OID_ISO_MEMBER_BODY_US_RSADSI_PKCS_PKCS_1_SHA384WITHRSAENCRYPTION: &str = "1.2.840.113549.1.1.12";
-const OID_ISO_MEMBER_BODY_US_RSADSI_PKCS_PKCS_1_ID_RSASSA_PSS: &str = "1.2.840.113549.1.1.10";
 
 /// Factory for [RsaSignatureEngine].
 ///
@@ -75,16 +69,24 @@ impl Default for RsaSignatureEngineFactory {
         Self {
             provided: vec![
                 // A descent selection of legacy algorithms?
+                AlgorithmMetaData::new("RSASSA-PKCS1-v1_5-SHA-256", env!("CARGO_PKG_NAME"))
+                    // iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) sha256WithRSAEncryption(11)
+                    .set_oid("1.2.840.113549.1.1.11"),
                 // Oked: CAB forum, CNSA 1.0. if length>=3072.
-                // 1.2.840.113549.1.1.12
-                //                AlgorithmMetaData::new("RSASSA-PKCS1-v1_5-SHA-384", env!("CARGO_PKG_NAME")),
+                AlgorithmMetaData::new("RSASSA-PKCS1-v1_5-SHA-384", env!("CARGO_PKG_NAME"))
+                    // iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) sha384WithRSAEncryption(12)
+                    .set_oid("1.2.840.113549.1.1.12"),
+                AlgorithmMetaData::new("RSASSA-PKCS1-v1_5-SHA-512", env!("CARGO_PKG_NAME"))
+                    // iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) sha512WithRSAEncryption(13)
+                    .set_oid("1.2.840.113549.1.1.13"),
                 // 1.2.840.113549.1.1.10
                 AlgorithmMetaData::new(
                     //"RSASSA-PSS-with-SHA-384-MGF1-with-SHA-384",
                     "RSASSA-PSS",
                     env!("CARGO_PKG_NAME"),
                 )
-                .set_oid(OID_ISO_MEMBER_BODY_US_RSADSI_PKCS_PKCS_1_ID_RSASSA_PSS),
+                // iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) rsassa-pss(10)
+                .set_oid("1.2.840.113549.1.1.10"),
             ],
         }
     }
@@ -126,7 +128,13 @@ impl Factory for RsaSignatureEngineFactory {
         };
         #[allow(clippy::match_single_binding)]
         match algorithm_name {
+            "RSASSA-PKCS1-v1_5-SHA-256" => {
+                Box::new(RsaSignatureEngine::new(algorithm_name, modulus_len))
+            }
             "RSASSA-PKCS1-v1_5-SHA-384" => {
+                Box::new(RsaSignatureEngine::new(algorithm_name, modulus_len))
+            }
+            "RSASSA-PKCS1-v1_5-SHA-512" => {
                 Box::new(RsaSignatureEngine::new(algorithm_name, modulus_len))
             }
             "RSASSA-PSS" => Box::new(RsaSignatureEngine::new(algorithm_name, modulus_len)),
@@ -215,21 +223,6 @@ impl From<&dyn PublicKey> for RsaPublicKeyHolder {
     }
 }
 
-/// As defined in [RFC8017 Appendix A.2.3](https://datatracker.ietf.org/doc/html/rfc8017#appendix-A.2.3)
-#[derive(AsnType, Clone, Debug, Encode, PartialEq, Eq, Hash)]
-struct RsassaPssParams {
-    #[rasn(tag(explicit(0)), default)]
-    pub hash_algorithm: rasn_pkix::AlgorithmIdentifier,
-    #[rasn(tag(explicit(1)), default)]
-    pub mask_gen_algorithm: rasn_pkix::AlgorithmIdentifier,
-    /// Should match length of hash algo
-    #[rasn(tag(explicit(2)), default)]
-    pub salt_length: Integer,
-    /// Must be 1
-    #[rasn(tag(explicit(3)), default)]
-    pub trailer_field: Integer,
-}
-
 impl SignatureEngine for RsaSignatureEngine {
     fn get_algorithm_name(&self) -> String {
         self.algorithm_name.to_owned()
@@ -237,11 +230,29 @@ impl SignatureEngine for RsaSignatureEngine {
 
     fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
         let algorithm_identifier = match self.algorithm_name.as_str() {
+            "RSASSA-PKCS1-v1_5-SHA-256" => {
+                // https://datatracker.ietf.org/doc/html/rfc8017#appendix-A.2.2
+                rasn_pkix::AlgorithmIdentifier {
+                    algorithm: rasn::types::ObjectIdentifier::from(
+                        rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 11]).unwrap(),
+                    ),
+                    parameters: None,
+                }
+            }
             "RSASSA-PKCS1-v1_5-SHA-384" => {
                 // https://datatracker.ietf.org/doc/html/rfc8017#appendix-A.2.2
                 rasn_pkix::AlgorithmIdentifier {
                     algorithm: rasn::types::ObjectIdentifier::from(
                         rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 12]).unwrap(),
+                    ),
+                    parameters: None,
+                }
+            }
+            "RSASSA-PKCS1-v1_5-SHA-512" => {
+                // https://datatracker.ietf.org/doc/html/rfc8017#appendix-A.2.2
+                rasn_pkix::AlgorithmIdentifier {
+                    algorithm: rasn::types::ObjectIdentifier::from(
+                        rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 13]).unwrap(),
                     ),
                     parameters: None,
                 }
@@ -278,16 +289,20 @@ impl SignatureEngine for RsaSignatureEngine {
                         algorithm: rasn::types::ObjectIdentifier::from(
                             rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 8]).unwrap(),
                         ),
-                        parameters: Some(Any::new(rasn::der::encode(&hash_algorithm).unwrap())),
+                        parameters: Some(rasn::prelude::Any::new(
+                            rasn::der::encode(&hash_algorithm).unwrap(),
+                        )),
                     },
-                    salt_length: rasn::types::Integer::Primitive(salt_length),
-                    trailer_field: rasn::types::Integer::Primitive(1),
+                    salt_length: rasn::types::Integer::from(salt_length),
+                    trailer_field: rasn::types::Integer::from(1),
                 };
                 rasn_pkix::AlgorithmIdentifier {
                     algorithm: rasn::types::ObjectIdentifier::from(
                         rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 10]).unwrap(),
                     ),
-                    parameters: Some(Any::new(rasn::der::encode(&rsassa_pss_params).unwrap())),
+                    parameters: Some(rasn::prelude::Any::new(
+                        rasn::der::encode(&rsassa_pss_params).unwrap(),
+                    )),
                 }
             }
             bad_alg => {
@@ -310,8 +325,24 @@ impl SignatureEngine for RsaSignatureEngine {
     fn sign(&mut self, private_key: &dyn PrivateKey, data: &[u8]) -> Option<Vec<u8>> {
         let priv_key = RsaPrivateKeyHolder::from(private_key).rsa_private_key;
         match self.algorithm_name.as_str() {
+            "RSASSA-PKCS1-v1_5-SHA-256" => {
+                let signing_key = rsa::pkcs1v15::SigningKey::<rsa::sha2::Sha256>::new(priv_key);
+                let mut rng = rand::thread_rng();
+                let signature =
+                    rsa::signature::RandomizedSigner::sign_with_rng(&signing_key, &mut rng, data);
+                let bytes = rsa::signature::SignatureEncoding::to_vec(&signature);
+                Some(bytes)
+            }
             "RSASSA-PKCS1-v1_5-SHA-384" => {
                 let signing_key = rsa::pkcs1v15::SigningKey::<rsa::sha2::Sha384>::new(priv_key);
+                let mut rng = rand::thread_rng();
+                let signature =
+                    rsa::signature::RandomizedSigner::sign_with_rng(&signing_key, &mut rng, data);
+                let bytes = rsa::signature::SignatureEncoding::to_vec(&signature);
+                Some(bytes)
+            }
+            "RSASSA-PKCS1-v1_5-SHA-512" => {
+                let signing_key = rsa::pkcs1v15::SigningKey::<rsa::sha2::Sha512>::new(priv_key);
                 let mut rng = rand::thread_rng();
                 let signature =
                     rsa::signature::RandomizedSigner::sign_with_rng(&signing_key, &mut rng, data);
@@ -340,8 +371,18 @@ impl SignatureEngine for RsaSignatureEngine {
     fn verify(&mut self, public_key: &dyn PublicKey, signature: &[u8], message: &[u8]) -> bool {
         let pub_key = RsaPublicKeyHolder::from(public_key).rsa_public_key;
         match self.algorithm_name.as_str() {
+            "RSASSA-PKCS1-v1_5-SHA-256" => {
+                let verifying_key = rsa::pkcs1v15::VerifyingKey::<rsa::sha2::Sha256>::new(pub_key);
+                let signature = rsa::pkcs1v15::Signature::try_from(signature).unwrap();
+                rsa::signature::Verifier::verify(&verifying_key, message, &signature).is_ok()
+            }
             "RSASSA-PKCS1-v1_5-SHA-384" => {
                 let verifying_key = rsa::pkcs1v15::VerifyingKey::<rsa::sha2::Sha384>::new(pub_key);
+                let signature = rsa::pkcs1v15::Signature::try_from(signature).unwrap();
+                rsa::signature::Verifier::verify(&verifying_key, message, &signature).is_ok()
+            }
+            "RSASSA-PKCS1-v1_5-SHA-512" => {
+                let verifying_key = rsa::pkcs1v15::VerifyingKey::<rsa::sha2::Sha512>::new(pub_key);
                 let signature = rsa::pkcs1v15::Signature::try_from(signature).unwrap();
                 rsa::signature::Verifier::verify(&verifying_key, message, &signature).is_ok()
             }
@@ -374,6 +415,21 @@ mod tests {
     fn test_pkcs1_v1_5_sha_384() {
         crate::test::common::init_logger();
         let algorithm_name = "RSASSA-PKCS1-v1_5-SHA-384";
+        let mut se = Box::new(RsaSignatureEngine::new(algorithm_name, TEST_MODULUS_LENGTH));
+        let (public_key, private_key) = se.generate_key_pair();
+        let data = b"Hello legacy!";
+        let signature = se.sign(private_key.as_ref(), data).unwrap();
+        let verified = se.verify(public_key.as_ref(), &signature, data);
+        assert_eq!(
+            verified, true,
+            "RSA signature algorithm '{algorithm_name}' failed."
+        )
+    }
+
+    #[test]
+    fn test_pkcs1_v1_5_sha_256() {
+        crate::test::common::init_logger();
+        let algorithm_name = "RSASSA-PKCS1-v1_5-SHA-256";
         let mut se = Box::new(RsaSignatureEngine::new(algorithm_name, TEST_MODULUS_LENGTH));
         let (public_key, private_key) = se.generate_key_pair();
         let data = b"Hello legacy!";

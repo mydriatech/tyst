@@ -21,6 +21,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::test::common::cached_url::CachedUrlResource;
 
+/// ACVP test suite representation.
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AcvpTests {
@@ -32,6 +33,7 @@ pub struct AcvpTests {
     test_groups: Vec<AcvpTestGroup>,
 }
 
+#[doc(hidden)]
 impl AcvpTests {
     pub fn get_vs_id(&self) -> u32 {
         self.vs_id
@@ -58,10 +60,12 @@ impl AcvpTests {
     }
 }
 
+/// ACVP test group representation.
 #[serde_with::serde_as]
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum AcvpTestGroup {
+    #[doc(hidden)]
     #[serde(rename_all = "camelCase")]
     KeyGen {
         //#[serde(rename = "tgId")]
@@ -72,6 +76,7 @@ pub enum AcvpTestGroup {
         parameter_set: String,
         tests: Vec<AcvpKeyGenTestData>,
     },
+    #[doc(hidden)]
     #[serde(rename_all = "camelCase")]
     SigGen {
         tg_id: u32,
@@ -80,6 +85,7 @@ pub enum AcvpTestGroup {
         deterministic: bool,
         tests: Vec<AcvpSigGenTestData>,
     },
+    #[doc(hidden)]
     #[serde(rename_all = "camelCase")]
     SigVer {
         tg_id: u32,
@@ -93,6 +99,7 @@ pub enum AcvpTestGroup {
     },
 }
 
+#[doc(hidden)]
 impl AcvpTestGroup {
     const NAME_KEY_GEN: &'static str = "key_gen";
     const NAME_SIG_GEN: &'static str = "sig_gen";
@@ -125,6 +132,7 @@ impl AcvpTestGroup {
     }
 }
 
+/// ACVP key generation test vector.
 #[serde_with::serde_as]
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -139,6 +147,7 @@ pub struct AcvpKeyGenTestData {
     sk: Vec<u8>,
 }
 
+#[doc(hidden)]
 impl AcvpKeyGenTestData {
     pub fn get_tc_id(&self) -> u32 {
         self.tc_id
@@ -161,6 +170,7 @@ impl AcvpKeyGenTestData {
     }
 }
 
+/// ACVP signature test vector.
 #[serde_with::serde_as]
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -178,6 +188,7 @@ pub struct AcvpSigGenTestData {
     signature: Vec<u8>,
 }
 
+#[doc(hidden)]
 impl AcvpSigGenTestData {
     pub fn get_tc_id(&self) -> u32 {
         self.tc_id
@@ -204,6 +215,7 @@ impl AcvpSigGenTestData {
     }
 }
 
+/// ACVP signature verification test vector.
 #[serde_with::serde_as]
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -218,6 +230,7 @@ pub struct AcvpSigVerTestData {
     reason: String,
 }
 
+#[doc(hidden)]
 impl AcvpSigVerTestData {
     pub fn get_tc_id(&self) -> u32 {
         self.tc_id
@@ -244,9 +257,8 @@ impl AcvpSigVerTestData {
     }
 }
 
-/**
-Download any missing ACVP test vectors and cache them locally under `${CARGO_MANIFEST_DIR}/resources/tests`.
- */
+/// Download any missing ACVP test vectors and cache them locally under
+/// `${CARGO_MANIFEST_DIR}/resources/tests`.
 pub fn get_acvp_test_data(url: &str) -> Option<AcvpTests> {
     CachedUrlResource::with_resource_dir(&["resources", "tests"])
         .fetch(url)

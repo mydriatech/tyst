@@ -23,6 +23,7 @@ mod factory_registry;
 
 #[cfg(test)]
 pub mod test {
+    //! Test utilities.
     pub mod common;
 }
 #[cfg(test)]

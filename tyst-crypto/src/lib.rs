@@ -42,6 +42,7 @@ mod se {
 }
 #[cfg(test)]
 pub mod test {
+    //! Test utilities
     pub mod common;
 }
 pub mod util;

@@ -51,7 +51,7 @@ Configuration will be loaded from
 
 1. the file `{application name}.json` in the current working directory.
 2. environment variable overrides in the form
-    `{APPLICATION_NAME}_MODULE_CONFIGKEYWITHOUTSPACES`
+   `{APPLICATION_NAME}_MODULE_CONFIGKEYWITHOUTSPACES`
  */
 #[derive(Debug, Deserialize, Serialize)]
 pub struct AppConfig {

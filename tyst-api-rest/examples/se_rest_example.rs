@@ -56,7 +56,8 @@ Missing API endpoint. Run with:
 fn available_ses(endpoint: &str) -> Result<String, ureq::Error> {
     Ok(ureq::get(&format!("http://{}/api/v1/ses", endpoint))
         .call()?
-        .into_string()?)
+        .body_mut()
+        .read_to_string()?)
 }
 
 fn se_keygen(
@@ -65,9 +66,10 @@ fn se_keygen(
 ) -> Result<(String, String), Box<dyn std::error::Error>> {
     // Size of HMAC is equal to the size of the hash-algo
     let res = ureq::post(&format!("http://{}/api/v1/se/{algorithm}/keygen", endpoint))
-        .set("Accept", "application/json")
-        .call()?
-        .into_string()?;
+        .header("Accept", "application/json")
+        .send_empty()?
+        .body_mut()
+        .read_to_string()?;
     let json = serde_json::from_str::<serde_json::Value>(&res)?;
     let priv_key_b64 = json
         .get("private_key")
@@ -94,14 +96,15 @@ fn se_sign(
 ) -> Result<String, Box<dyn std::error::Error>> {
     // Size of HMAC is equal to the size of the hash-algo
     let res = ureq::post(&format!("http://{}/api/v1/se/{algorithm}/sign", endpoint))
-        .set("Accept", "application/json")
+        .header("Accept", "application/json")
         .send_json(&serde_json::json!({
             "private_key": {
                 "key_material_b64": priv_key_b64.to_string(),
             },
             "message_b64": message_b64.to_string(),
         }))?
-        .into_string()?;
+        .body_mut()
+        .read_to_string()?;
     let json = serde_json::from_str::<serde_json::Value>(&res)?;
     let signature_b64 = json
         .get("signature_b64")

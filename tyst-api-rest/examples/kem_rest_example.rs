@@ -49,7 +49,8 @@ Missing API endpoint. Run with:
 fn available_kems(endpoint: &str) -> Result<String, ureq::Error> {
     Ok(ureq::get(&format!("http://{}/api/v1/kems", endpoint))
         .call()?
-        .into_string()?)
+        .body_mut()
+        .read_to_string()?)
 }
 
 fn kem_keygen(
@@ -60,9 +61,10 @@ fn kem_keygen(
         "http://{}/api/v1/kem/{algorithm}/keygen",
         endpoint
     ))
-    .set("Accept", "application/json")
-    .call()?
-    .into_string()?;
+    .header("Accept", "application/json")
+    .send_empty()?
+    .body_mut()
+    .read_to_string()?;
     let json = serde_json::from_str::<serde_json::Value>(&res)?;
     let dk_b64 = json
         .get("decapsulation_key")
@@ -90,11 +92,12 @@ fn kem_encapsulate(
         "http://{}/api/v1/kem/{algorithm}/encapsulate",
         endpoint
     ))
-    .set("Accept", "application/json")
+    .header("Accept", "application/json")
     .send_json(&serde_json::json!({
         "encapsulation_key_b64": ek_b64,
     }))?
-    .into_string()?;
+    .body_mut()
+    .read_to_string()?;
     let json = serde_json::from_str::<serde_json::Value>(&res)?;
     let ct_b64 = json
         .get("cipher_text_b64")
@@ -121,14 +124,15 @@ fn kem_decapsulate(
         "http://{}/api/v1/kem/{algorithm}/decapsulate",
         endpoint
     ))
-    .set("Accept", "application/json")
+    .header("Accept", "application/json")
     .send_json(&serde_json::json!({
         "decapsulation_key": {
             "key_material_b64": dk_b64
         },
         "cipher_text_b64": ct_b64,
     }))?
-    .into_string()?;
+    .body_mut()
+    .read_to_string()?;
     let json = serde_json::from_str::<serde_json::Value>(&res)?;
     let ss_b64 = json
         .get("shared_secret_b64")

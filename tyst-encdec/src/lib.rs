@@ -22,5 +22,6 @@
 pub mod base64;
 mod encdec_errors;
 pub mod hex;
+pub mod oid;
 
 pub use encdec_errors::DecodingError;

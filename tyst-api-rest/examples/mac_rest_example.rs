@@ -17,7 +17,6 @@
 
 //! Example of using Message Authentication Code (MAC) REST API
 
-use std::io::Read;
 use tyst::encdec::base64;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -48,7 +47,8 @@ Missing API endpoint. Run with:
 fn available_macs(endpoint: &str) -> Result<String, ureq::Error> {
     Ok(ureq::get(&format!("http://{}/api/v1/macs", endpoint))
         .call()?
-        .into_string()?)
+        .body_mut()
+        .read_to_string()?)
 }
 
 fn mac(
@@ -58,16 +58,16 @@ fn mac(
     message: &[u8],
 ) -> Result<Vec<u8>, ureq::Error> {
     // Size of HMAC is equal to the size of the hash-algo
-    let mut bytes: Vec<u8> = Vec::with_capacity(512 / 8);
-    ureq::post(&format!("http://{}/api/v1/mac/{algorithm}/mac", endpoint))
-        .set("Accept", "application/json")
-        .send_json(&serde_json::json!({
-            "key": { "key_material_b64": key_b64 },
-            "message_b64": base64::encode(message),
-        }))?
-        .into_reader()
-        .read_to_end(&mut bytes)?;
-    Ok(bytes)
+    Ok(
+        ureq::post(&format!("http://{}/api/v1/mac/{algorithm}/mac", endpoint))
+            .header("Accept", "application/json")
+            .send_json(&serde_json::json!({
+                "key": { "key_material_b64": key_b64 },
+                "message_b64": base64::encode(message),
+            }))?
+            .body_mut()
+            .read_to_vec()?,
+    )
 }
 
 fn mac_keygen(endpoint: &str, algorithm: &str) -> Result<String, Box<dyn std::error::Error>> {
@@ -76,9 +76,10 @@ fn mac_keygen(endpoint: &str, algorithm: &str) -> Result<String, Box<dyn std::er
         "http://{}/api/v1/mac/{algorithm}/keygen",
         endpoint
     ))
-    .set("Accept", "application/json")
-    .call()?
-    .into_string()?;
+    .header("Accept", "application/json")
+    .send_empty()?
+    .body_mut()
+    .read_to_string()?;
     let json = serde_json::from_str::<serde_json::Value>(&res)?;
     let key_b64 = json
         .get("key")

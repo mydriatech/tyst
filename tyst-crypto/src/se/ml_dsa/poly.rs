@@ -116,7 +116,7 @@ impl Poly {
     /// NIST FIPS 204 Algorithm 14
     fn coeff_from_three_bytes_inner(b0: u8, b1: u8, b2: u8) -> i32 {
         let b2 = b2 & 0x7f;
-        let z = (b2 as u32) << 16 | (b1 as u32) << 8 | b0 as u32;
+        let z = ((b2 as u32) << 16) | ((b1 as u32) << 8) | b0 as u32;
         z as i32
     }
 
