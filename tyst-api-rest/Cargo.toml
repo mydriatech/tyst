@@ -20,7 +20,7 @@ tyst_api_rest_health = { path = "../tyst-api-rest-health", default-features = tr
 tyst = { path = "../tyst-core", default-features = true, features = [] }
 
 # Async and concurrency
-tokio = { version = "1", default-features = false, features = ["rt-multi-thread", "macros", "signal"] }
+tokio = { workspace = true, features = [] }
 crossbeam-skiplist = { workspace = true, features = [] }
 futures = { version = "0.3", default-features = false, features = ["std", "async-await"] }
 
@@ -33,12 +33,12 @@ config = { version = "0.14", default-features = false, features = ["json"] }
 cgroups-rs = "0.3"
 
 # REST API
-actix-web = { version = "4.6", default-features = false, features = ["macros", "http2", "compress-brotli"] }
-utoipa = { version = "5", features = ["actix_extras"] }
-serde = { version = "1.0", default-features = false, features = ["std"] }
-serde_json = "1.0"
-serde_with = { version = "3.11", default-features = true, features = ["base64"] }
+actix-web = { workspace = true, features = [] }
+utoipa = { workspace = true, features = [] }
+serde = { workspace = true, features = [] }
+serde_json = { workspace = true, features = [] }
+serde_with = { workspace = true, features = ["base64"] }
 
 [dev-dependencies]
 # HTTP client lib used in examples and tests
-ureq = { version = "2.10", default-features = true, features = ["json"] }
+ureq = { workspace = true, features = ["json"] }

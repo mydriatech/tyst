@@ -18,7 +18,7 @@
 //! Helper for downloading test vectors and caching them on disk.
 
 use std::time::Duration;
-use ureq::{Agent, AgentBuilder};
+use ureq::Agent;
 use url::Url;
 
 /// Download of test resources that are not present on disk
@@ -31,11 +31,11 @@ impl CachedUrlResource {
     /// Cache downloads relative to `${CARGO_MANIFEST_DIR}`
     pub fn with_resource_dir(relative_cache_dir_names: &[&str]) -> Self {
         Self {
-            agent: AgentBuilder::new()
-                .timeout_read(Duration::from_secs(5))
-                .timeout_write(Duration::from_secs(5))
-                .redirects(5)
-                .build(),
+            agent: Agent::config_builder()
+                .timeout_global(Some(Duration::from_secs(5)))
+                .max_redirects(5)
+                .build()
+                .into(),
             relative_cache_dir_names: relative_cache_dir_names
                 .iter()
                 .map(|s| s.to_string())
@@ -43,11 +43,13 @@ impl CachedUrlResource {
         }
     }
 
+    /// Retrieve content from cache or target `url`.
     pub fn fetch(&self, url: &str) -> Option<String> {
         self.from_cache(url)
             .or_else(|| self.persist(url, self.download(url)))
     }
 
+    /// Retrieve content from target `url`.
     fn download(&self, url: &str) -> Option<String> {
         log::info!("Downloading '{url}'.");
         self.agent
@@ -57,9 +59,10 @@ impl CachedUrlResource {
                 log::info!("Failed request to {url}: {e:?}");
             })
             .ok()
-            .and_then(|response| {
+            .and_then(|mut response| {
                 response
-                    .into_string()
+                    .body_mut()
+                    .read_to_string()
                     .map_err(|e| {
                         log::info!("Failed to parse response from {url}: {e:?}");
                     })

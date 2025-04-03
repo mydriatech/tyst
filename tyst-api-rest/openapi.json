@@ -4,8 +4,8 @@
     "title": "tyst_api_rest",
     "description": "TYST REST API",
     "license": {
-      "name": "Apache-2.0 WITH FWM-Exception-1.0.0",
-      "identifier": "Apache-2.0 WITH FWM-Exception-1.0.0"
+      "name": "Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0",
+      "identifier": "Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0"
     },
     "version": "0.0.0"
   },

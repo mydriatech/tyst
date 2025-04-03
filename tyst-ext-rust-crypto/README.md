@@ -16,6 +16,7 @@ This crate provides a selection of relevant and/or legacy algorithms from extern
 
 * Secure Hash Algorithm 2 (SHA-2) from [RustCrypto: Hashes](https://github.com/RustCrypto/hashes/)
 
+
 ### Signature Engine (SE) imports
 
 * ECDSA from [RustCrypto: Signatures](https://github.com/RustCrypto/signatures/)
@@ -24,7 +25,9 @@ This crate provides a selection of relevant and/or legacy algorithms from extern
 * EdDSA from [RustCrypto: Signatures](https://github.com/RustCrypto/signatures/)
     * `Ed25519`
 * RSASSA from [RustCrypto: Signatures](https://github.com/RustCrypto/signatures/)
-    * Vulnerable to [RUSTSEC-2023-0071](https://rustsec.org/advisories/RUSTSEC-2023-0071). Please ensure that your use-case is not vulnerable to this side-channel before use.
+    * Vulnerable to [RUSTSEC-2023-0071](https://rustsec.org/advisories/RUSTSEC-2023-0071).
+      Please ensure that your use-case is not vulnerable to this side-channel attack before use.
+      This will be resolved in the upcoming `0.10.0` version of the [`rsa`](https://github.com/RustCrypto/RSA) crate.
 
 
 ## Security
@@ -41,6 +44,7 @@ It can NOT be expected that:
 
 * vulnerabilities in these dependencies are corrected by this project's maintainers, since they are outside the projects control.
 * the latest version of the source code of the external implementations has been reviewed by this project's maintainers.
+
 
 ### Known vulnerabilities
 

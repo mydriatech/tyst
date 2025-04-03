@@ -15,17 +15,27 @@
     limitations under the License.
 */
 
-//! Common test utilities.
+//! Object Identifier String encode and decode.
 
-pub mod acvp;
-pub mod cached_url;
+pub use super::DecodingError;
+use std::num::ParseIntError;
 
-/// Initialize logging.
-pub fn init_logger() {
-    let _ = env_logger::builder()
-        .is_test(true)
-        .filter_level(log::LevelFilter::Debug)
-        .filter(Some("rustls"), log::LevelFilter::Info)
-        .filter(Some("ureq"), log::LevelFilter::Info)
-        .try_init();
+/// Convert a String of numbers with '.' as separator into a vector.
+pub fn from_string(oid: &str) -> Result<Vec<u32>, DecodingError> {
+    Ok(oid
+        .split(".")
+        .map(|part| {
+            part.parse()
+                .map_err(|e: ParseIntError| DecodingError::with_msg(&e.to_string()))
+                .unwrap()
+        })
+        .collect::<Vec<u32>>())
+}
+
+/// Convert sequence of numbers into String using '.' as separator.
+pub fn as_string(oid: &[u32]) -> String {
+    oid.iter()
+        .map(|part| part.to_string())
+        .collect::<Vec<_>>()
+        .join(".")
 }

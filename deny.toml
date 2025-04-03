@@ -23,6 +23,7 @@ allow = [
     #"Unlicense",
     # Requires SPDX 3
     #"Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0",
+    "Zlib",
 ]
 confidence-threshold = 0.8
 exceptions = [

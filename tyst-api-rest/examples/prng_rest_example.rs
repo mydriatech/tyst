@@ -17,8 +17,6 @@
 
 //! Example of using Psuedo Random Number Generator (PRNG) REST API
 
-use std::io::Read;
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(endpoint) = std::env::args().nth(1) {
         let algorithm = "default";
@@ -47,20 +45,19 @@ Missing API endpoint. Run with:
 fn available_prngs(endpoint: &str) -> Result<String, ureq::Error> {
     Ok(ureq::get(&format!("http://{}/api/v1/prngs", endpoint))
         .call()?
-        .into_string()?)
+        .body_mut()
+        .read_to_string()?)
 }
 
 fn prng_random(endpoint: &str, algorithm: &str, byte_count: usize) -> Result<Vec<u8>, ureq::Error> {
-    let mut bytes: Vec<u8> = Vec::with_capacity(byte_count);
-    ureq::get(&format!(
+    Ok(ureq::get(&format!(
         "http://{}/api/v1/prng/{algorithm}/random/{byte_count}",
         endpoint
     ))
-    .set("Accept", "application/octet-stream")
+    .header("Accept", "application/octet-stream")
     .call()?
-    .into_reader()
-    .read_to_end(&mut bytes)?;
-    Ok(bytes)
+    .body_mut()
+    .read_to_vec()?)
 }
 
 fn prng_random_as_hex(
@@ -73,5 +70,6 @@ fn prng_random_as_hex(
         endpoint
     ))
     .call()?
-    .into_string()?)
+    .body_mut()
+    .read_to_string()?)
 }

@@ -64,7 +64,7 @@ pub fn decode(data: &str) -> Result<Vec<u8>, DecodingError> {
     Ok((0..data.len())
         .step_by(2)
         .map(|i| {
-            quartet_from_char(data_bytes[i]).unwrap() << 4
+            (quartet_from_char(data_bytes[i]).unwrap() << 4)
                 | quartet_from_char(data_bytes[i + 1]).unwrap()
         })
         .collect::<Vec<_>>())

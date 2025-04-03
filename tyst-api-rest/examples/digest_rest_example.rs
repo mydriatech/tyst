@@ -17,8 +17,6 @@
 
 //! Example of using message digest REST API
 
-use std::io::Read;
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(endpoint) = std::env::args().nth(1) {
         let algorithm = "SHA3-384";
@@ -50,23 +48,25 @@ Missing API endpoint. Run with:
 fn available_digests(endpoint: &str) -> Result<String, ureq::Error> {
     Ok(ureq::get(&format!("http://{}/api/v1/digests", endpoint))
         .call()?
-        .into_string()?)
+        .body_mut()
+        .read_to_string()?)
 }
 
 fn hash(endpoint: &str, algorithm: &str, message: &[u8]) -> Result<Vec<u8>, ureq::Error> {
-    let mut hash_bytes: Vec<u8> = Vec::with_capacity(64);
-    ureq::post(&format!("http://{}/api/v1/digest/{algorithm}", endpoint))
-        .set("Accept", "application/octet-stream")
-        .send_bytes(message)?
-        .into_reader()
-        .read_to_end(&mut hash_bytes)?;
-    Ok(hash_bytes)
+    Ok(
+        ureq::post(&format!("http://{}/api/v1/digest/{algorithm}", endpoint))
+            .header("Accept", "application/octet-stream")
+            .send(message)?
+            .body_mut()
+            .read_to_vec()?,
+    )
 }
 
 fn hash_as_hex(endpoint: &str, algorithm: &str, message: &[u8]) -> Result<String, ureq::Error> {
     Ok(
         ureq::post(&format!("http://{}/api/v1/digest/{algorithm}", endpoint))
-            .send_bytes(message)?
-            .into_string()?,
+            .send(message)?
+            .body_mut()
+            .read_to_string()?,
     )
 }

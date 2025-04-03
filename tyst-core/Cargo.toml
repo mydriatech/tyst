@@ -21,7 +21,6 @@ tyst_encdec = { path = "../tyst-encdec" }
 
 # Logging and tracing
 log = { workspace = true, features = [] }
-env_logger = { workspace = true, features = [] }
 
 crossbeam-skiplist = { workspace = true, features = [] }
 
@@ -30,14 +29,17 @@ crossbeam-skiplist = { workspace = true, features = [] }
 bencher = { version = "0.1", default-features = true, features = [] }
 
 [dev-dependencies]
+# Logging and tracing
+env_logger = { workspace = true, features = [] }
+
 # Parsing of test vectors
-serde = { version = "1.0", default-features = false, features = ["std"] }
-serde_with = { version = "3.11", default-features = true, features = ["hex"] }
-serde_json = "1.0"
+serde = { workspace = true, features = [] }
+serde_with = { workspace = true, features = ["hex"] }
+serde_json = { workspace = true, features = [] }
 
 # Automatic resource download during testing
-ureq = { version = "2.10", default-features = true, features = [] }
-url = { version = "2.5", default-features = true, features = [] }
+ureq = { workspace = true, features = [] }
+url = { workspace = true, features = [] }
 
 # Rust nightly benchmark port to stable
 #bencher = { version = "0.1", default-features = true, features = [] }
