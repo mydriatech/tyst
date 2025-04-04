@@ -21,6 +21,7 @@
 
 mod digest {
     //! Message digest (hash) implementations
+    pub mod sha1;
     pub mod sha2;
 }
 mod kem {
@@ -58,7 +59,10 @@ impl CryptoBundle for ExternalRustCryptoBundle {
     fn provided_digests(
         &self,
     ) -> Vec<Arc<dyn Factory<Type = dyn Digest, Parameters = DigestParams>>> {
-        vec![Arc::new(digest::sha2::Sha2DigestFactory::default())]
+        vec![
+            Arc::new(digest::sha1::Sha1DigestFactory::default()),
+            Arc::new(digest::sha2::Sha2DigestFactory::default()),
+        ]
     }
 
     fn provided_kems(&self) -> Vec<Arc<dyn Factory<Type = dyn Kem, Parameters = KemParams>>> {

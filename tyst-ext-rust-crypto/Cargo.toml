@@ -20,6 +20,7 @@ p256 = { version = "0.13", default-features = true, features = [] }
 p384 = { version = "0.13", default-features = true, features = [] }
 k256 = { version = "0.13", default-features = true, features = [] }
 ed25519-dalek = { version = "2.1", default-features = true, features = ["pkcs8", "rand_core"] }
+sha1 = { version = "0.10", default-features = true, features = [] }
 sha2 = { version = "0.10", default-features = true, features = [] }
 ml-kem = { version = "0.2", default-features = true, features = [] }
 

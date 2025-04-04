@@ -172,7 +172,8 @@ pub fn decode(data: &str) -> Result<Vec<u8>, DecodingError> {
                 // Unknown garbage
                 c => {
                     return Err(DecodingError::with_msg(&format!(
-                        "Unknown garbage in input: '{c}'"
+                        "Unknown garbage in input at position {}: '0x{c:x}'",
+                        offset + i
                     )))
                 }
             };
