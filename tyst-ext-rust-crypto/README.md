@@ -14,6 +14,7 @@ This crate provides a selection of relevant and/or legacy algorithms from extern
 
 ### Message Digest ("hash") imports
 
+* Secure Hash Algorithm 1 (SHA-1) from [RustCrypto: Hashes](https://github.com/RustCrypto/hashes/)
 * Secure Hash Algorithm 2 (SHA-2) from [RustCrypto: Hashes](https://github.com/RustCrypto/hashes/)
 
 
