@@ -103,11 +103,8 @@ impl Digest for Sha1Digest {
 mod tests {
     use super::*;
 
-    const TEST_VECTOR: &[(&'static str, &'static str, &'static str)] = &[(
-        "SHA-1",
-        "",
-        "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-    )];
+    const TEST_VECTOR: &[(&'static str, &'static str, &'static str)] =
+        &[("SHA-1", "", "da39a3ee5e6b4b0d3255bfef95601890afd80709")];
 
     #[test]
     fn test_vectors() {
