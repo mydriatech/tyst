@@ -153,13 +153,17 @@ pub fn encode(data: &[u8]) -> String {
     ret
 }
 
-/// Base64Url encode using characters (`A-Z-a-z0-9-_`) and no padding.
-pub fn encode_url(data: &[u8]) -> String {
-    encode(data)
-        .replace("+", "-")
-        .replace("/", "_")
-        .trim_end_matches('=')
-        .to_string()
+/// Base64Url encode using characters (`A-Z-a-z0-9-_`) and optional '=' padding.
+pub fn encode_url(data: &[u8], padding: bool) -> String {
+    if padding {
+        encode(data).replace("+", "-").replace("/", "_")
+    } else {
+        encode(data)
+            .replace("+", "-")
+            .replace("/", "_")
+            .trim_end_matches('=')
+            .to_string()
+    }
 }
 
 /// Base64 decode using standard characters (`A-Z-a-z0-9+/`) and padding (`=`).
@@ -232,8 +236,9 @@ pub fn decode(data: &str) -> Result<Vec<u8>, DecodingError> {
     Ok(ret)
 }
 
-/// Base64 decode using standard characters (`A-Z-a-z0-9-_`) and no padding.
+/// Base64 decode using standard characters (`A-Z-a-z0-9-_`) and no or '=' padding.
 pub fn decode_url(data: &str) -> Result<Vec<u8>, DecodingError> {
+    let data = data.trim_end_matches('=');
     let padding = (4 - data.len() % 4) % 4;
     let data = data.replace("-", "+").replace("_", "/")
         + &vec!['='; padding].into_iter().collect::<String>();
@@ -246,7 +251,6 @@ mod tests {
 
     #[test]
     fn sanity_check_encode() {
-        //crate::test::common::init_logger();
         let expected = "TXlkcmlhVGVjaCBBQgo=";
         assert_eq!(
             encode(b"MydriaTech AB\n".as_slice()).as_str(),
@@ -257,18 +261,20 @@ mod tests {
 
     #[test]
     fn sanity_check_encode_url() {
-        //crate::test::common::init_logger();
-        let expected = "TXlkcmlhVGVjaCBBQgo";
         assert_eq!(
-            encode_url(b"MydriaTech AB\n".as_slice()).as_str(),
-            expected,
+            encode_url(b"MydriaTech AB\n".as_slice(), false).as_str(),
+            "TXlkcmlhVGVjaCBBQgo",
+            "Basic base64url encoder is broken."
+        );
+        assert_eq!(
+            encode_url(b"MydriaTech AB\n".as_slice(), true).as_str(),
+            "TXlkcmlhVGVjaCBBQgo=",
             "Basic base64url encoder is broken."
         );
     }
 
     #[test]
     fn sanity_check_decode() {
-        //crate::test::common::init_logger();
         let expected = b"MydriaTech AB\n".as_slice();
         assert_eq!(
             &decode("TXlkcmlhVGVjaCBBQgo=").unwrap(),
@@ -279,7 +285,6 @@ mod tests {
 
     #[test]
     fn sanity_check_decode_url() {
-        //crate::test::common::init_logger();
         let expected = b"MydriaTech AB\n".as_slice();
         assert_eq!(
             &decode_url("TXlkcmlhVGVjaCBBQgo").unwrap(),
