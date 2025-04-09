@@ -66,16 +66,25 @@ use tyst_traits::CryptoRegistry;
 pub struct MldsaSignatureEngineFactory {
     provided: Vec<AlgorithmMetaData>,
 }
+
+//joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3)
+//  id-ml-dsa-44(17)
+//  id-ml-dsa-65(18)
+//  id-ml-dsa-87(19)
+//  id-hash-ml-dsa-44-with-sha512(32)
+//  id-hash-ml-dsa-65-with-sha512(33)
+//  id-hash-ml-dsa-87-with-sha512(34)
+
 impl Default for MldsaSignatureEngineFactory {
     fn default() -> Self {
         Self {
             provided: vec![
                 AlgorithmMetaData::new("ML-DSA-44", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.17"),
+                    .set_oid("2.16.840.1.101.3.4.3.17"),
                 AlgorithmMetaData::new("ML-DSA-65", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.18"),
+                    .set_oid("2.16.840.1.101.3.4.3.18"),
                 AlgorithmMetaData::new("ML-DSA-87", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.19"),
+                    .set_oid("2.16.840.1.101.3.4.3.19"),
             ],
         }
     }
