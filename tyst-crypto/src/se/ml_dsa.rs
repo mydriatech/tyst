@@ -144,13 +144,13 @@ impl SignatureEngine for MldsaEngine {
     fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
         let algorithm = match self.algorithm_name.as_str() {
             "ML-DSA-44" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 17]).unwrap(),
+                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 3, 17]).unwrap(),
             ),
             "ML-DSA-65" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 18]).unwrap(),
+                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 3, 18]).unwrap(),
             ),
             "ML-DSA-87" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 19]).unwrap(),
+                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 3, 19]).unwrap(),
             ),
             bad_alg => {
                 panic!("Unsupported signature algorithm '{bad_alg}'.");
