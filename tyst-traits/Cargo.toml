@@ -4,6 +4,7 @@ version = "0.0.0"
 edition = "2021"
 description = "TYST Traits and Common Objects"
 license = "Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0"
+publish = false
 
 [dependencies]
 # ASN.1

@@ -4,6 +4,7 @@ version = "0.0.0"
 edition = "2021"
 description = "TYST REST API EMP Health library"
 license = "Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0"
+publish = false
 
 [dependencies]
 actix-web = { workspace = true, features = [] }
