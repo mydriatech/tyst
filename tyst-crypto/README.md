@@ -10,9 +10,15 @@ This crate contains a collection of crypto algorithm implementations.
 * NIST FIPS 202 SHA3
 * NIST FIPS 202 SHAKE
 
+### Key Derivation Function (KDF) implementations
+
+* Password-Based Key Derivation Function 2 (PBKDF2) defined in
+  [RFC 8018 5.2](https://www.rfc-editor.org/rfc/rfc8018#section-5.2)
+  (HMAC-SHA3 versions).
+
 ### Message Authentication Code (MAC) implementations
 
-* HMAC (SHA3 versions of [RFC 2104](https://datatracker.ietf.org/doc/html/rfc2104))
+* HMAC (SHA3 versions of [RFC 2104](https://datatracker.ietf.org/doc/html/rfc2104)).
 
 ### Psuedo-Random Number Generator (PRNG) implementations
 
