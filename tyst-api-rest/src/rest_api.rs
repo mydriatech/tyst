@@ -18,6 +18,7 @@
 //! REST API server and resources.
 
 mod digest_resources;
+mod kdf_resources;
 mod kem_resources;
 mod mac_resources;
 mod prng_resources;
@@ -70,6 +71,8 @@ pub async fn run_http_server(
             .service(get_openapi)
             .service(digest_resources::digest)
             .service(digest_resources::digests)
+            .service(kdf_resources::kdfs)
+            .service(kdf_resources::derive)
             .service(kem_resources::kems)
             .service(kem_resources::kem_keygen)
             .service(kem_resources::kem_keygen_result)
@@ -123,6 +126,8 @@ pub fn openapi_as_string() -> String {
         paths(
             digest_resources::digest,
             digest_resources::digests,
+            kdf_resources::kdfs,
+            kdf_resources::derive,
             kem_resources::kems,
             kem_resources::kem_keygen,
             kem_resources::kem_keygen_result,

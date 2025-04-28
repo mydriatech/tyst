@@ -89,6 +89,7 @@ repository:
 ```text
 # You can run these from the repository root
 cargo run --example digest_rest_example -- 127.0.0.1:8084
+cargo run --example kdf_rest_example    -- 127.0.0.1:8084
 cargo run --example kem_rest_example    -- 127.0.0.1:8084
 cargo run --example mac_rest_example    -- 127.0.0.1:8084
 cargo run --example prng_rest_example   -- 127.0.0.1:8084
