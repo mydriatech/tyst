@@ -1,10 +1,11 @@
 [package]
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = { workspace = true }
 name = "tyst_crypto"
-version = "0.0.0"
-edition = "2021"
 description = "TYST Crypto Algorithm Implementations"
-license = "Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0"
-publish = false
 
 [dependencies]
 
