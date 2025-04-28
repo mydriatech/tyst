@@ -35,7 +35,7 @@ impl EntropySource for OsEntropySource {
     fn get_entropy(&mut self, minimum_bits: usize) -> Vec<u8> {
         // Round up, so we have at least the requested number of bits
         let mut dest = vec![0u8; (minimum_bits + 7) >> 3];
-        if let Err(e) = getrandom::getrandom(&mut dest) {
+        if let Err(e) = getrandom::fill(&mut dest) {
             panic!("Failed to get sufficient entropy: {e:?}");
         }
         dest

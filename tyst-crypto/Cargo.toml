@@ -14,7 +14,7 @@ tyst_encdec = { path = "../tyst-encdec" }
 # Logging and tracing
 log = { workspace = true, features = [] }
 
-getrandom = { version = "0.2", default-features = false, features = [] }
+getrandom = { version = "0.3", default-features = false, features = [] }
 constant_time_eq = { version = "0.3", default-features = false, features = [] }
 
 # ASN.1
