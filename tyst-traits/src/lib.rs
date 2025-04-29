@@ -22,7 +22,6 @@
 pub mod common;
 pub mod digest;
 pub mod factory;
-pub mod kdf;
 pub mod kem;
 pub mod mac;
 pub mod prng;
@@ -32,8 +31,6 @@ use self::digest::Digest;
 use self::digest::DigestParams;
 use self::factory::Factory;
 use self::factory::FactoryRegistry;
-use self::kdf::Kdf;
-use self::kdf::KdfParams;
 use self::kem::Kem;
 use self::kem::KemParams;
 use self::mac::Mac;
@@ -53,11 +50,6 @@ pub trait CryptoBundle: Sync + Send {
     fn provided_digests(
         &self,
     ) -> Vec<Arc<dyn Factory<Type = dyn Digest, Parameters = DigestParams>>> {
-        vec![]
-    }
-
-    /// Return registry of Key Derivation Function (KDF) algorithm factories.
-    fn provided_kdfs(&self) -> Vec<Arc<dyn Factory<Type = dyn Kdf, Parameters = KdfParams>>> {
         vec![]
     }
 
@@ -95,13 +87,6 @@ pub trait CryptoRegistry: Sync + Send {
     ) -> &dyn FactoryRegistry<Fact = dyn Factory<Type = dyn Digest, Parameters = DigestParams>>
     {
         panic!("No Message Digest is provided by this implementation.")
-    }
-
-    /// Return Key Derivation Function (KDF) algorithm factories provided by this bundle.
-    fn kdfs(
-        &self,
-    ) -> &dyn FactoryRegistry<Fact = dyn Factory<Type = dyn Kdf, Parameters = KdfParams>> {
-        panic!("No Key Derivation Function is provided by this implementation.")
     }
 
     /// Return Key Encapsulation Mechanism (KEM) algorithm factories provided by this bundle.

@@ -15,23 +15,18 @@
     limitations under the License.
 */
 
-//! Key Derivation Function (KDF) REST API resources
+//! Miscellaneous cryptographic primitive REST API resources
 
-use super::rest_api_common::AlgorithmMetaDataItem;
 use actix_web::error::ErrorBadRequest;
-use actix_web::get;
 use actix_web::http::StatusCode;
 use actix_web::post;
 use actix_web::web::Json;
-use actix_web::web::Path;
-use actix_web::Error;
 use actix_web::HttpResponse;
 use actix_web::Responder;
 use actix_web::Result;
 use serde::{Deserialize, Serialize};
 use serde_with::base64::Base64;
 use serde_with::serde_as;
-use tyst::traits::kdf::KdfParams;
 use tyst::Tyst;
 use utoipa::ToSchema;
 
@@ -53,36 +48,10 @@ pub struct KdfResponse {
     pub derived_key_b64: Vec<u8>,
 }
 
-/// List available KDF algorithms
+/// PBKDF2
 ///
-/// List all available Key Derivation Function (KDF) algorithms.
+/// Password-Based Key Derivation Function 2 (PBKDF2).
 #[utoipa::path(
-    responses(
-        (status = 200, description = "List of available algorithms", body = inline(Vec<AlgorithmMetaDataItem>), content_type = "application/json",),
-    ),
-)]
-#[get("/kdfs")]
-pub async fn kdfs() -> Result<HttpResponse, Error> {
-    Ok(HttpResponse::build(StatusCode::OK).body(
-        serde_json::to_string_pretty(
-            &Tyst::instance()
-                .kdfs()
-                .get_algorithm_meta_datas()
-                .into_iter()
-                .map(AlgorithmMetaDataItem::from)
-                .collect::<Vec<_>>(),
-        )
-        .unwrap(),
-    ))
-}
-
-/// Derive Key
-///
-/// Derive Key using Key Derivation Function (KDF).
-#[utoipa::path(
-    params(
-        ("algorithm", description = "The KDF algorithm."),
-    ),
     request_body = inline(KdfRequest),
     responses(
         (status = 200, description = "Success", body = inline(KdfResponse), content_type = "application/json",),
@@ -90,28 +59,20 @@ pub async fn kdfs() -> Result<HttpResponse, Error> {
         (status = 404, description = "Fail"),
     ),
 )]
-#[post("/kdf/{algorithm}/derive")]
-pub async fn derive(path: Path<String>, request: Json<KdfRequest>) -> Result<impl Responder> {
-    let algorithm_name = path.into_inner();
-    // TODO: Make this a query param
-    let params = KdfParams::default().set_psuedo_random_function(
-        &tyst::encdec::oid::from_string("2.16.840.1.101.3.4.2.16").unwrap(),
-    );
+#[post("/misc/PBKDF2/derive")]
+pub async fn pbkdf2_derive(request: Json<KdfRequest>) -> Result<impl Responder> {
     if request.iterations > 16384 {
         return Ok(HttpResponse::build(StatusCode::BAD_REQUEST).finish());
     }
     if request.output_len > 65536 {
         return Ok(HttpResponse::build(StatusCode::BAD_REQUEST).finish());
     }
-    if let Some(mut kdf) = Tyst::instance().kdfs().by_name_and_criteria_with_params(
-        &algorithm_name,
-        None,
-        Some(params),
-    ) {
+    // TODO: Make this a query param (instead of hard-coding HMAC-SHA3-512)
+    if let Some(prf) = Tyst::instance().macs().by_name("HMAC-SHA3-512") {
         let mut response = KdfResponse {
             derived_key_b64: vec![0u8; usize::try_from(request.output_len).unwrap()],
         };
-        kdf.derive(
+        tyst::misc::Pbkdf2::new(prf).derive_key(
             &request.password_b64,
             &request.salt_b64,
             usize::try_from(request.iterations).unwrap(),
@@ -120,6 +81,8 @@ pub async fn derive(path: Path<String>, request: Json<KdfRequest>) -> Result<imp
         Ok(HttpResponse::build(StatusCode::OK)
             .body(serde_json::to_string_pretty(&response).unwrap()))
     } else {
-        Err(ErrorBadRequest("Unable to find any matching KDF."))
+        Err(ErrorBadRequest(
+            "Unable to find any matching MAC to use as PRF.",
+        ))
     }
 }

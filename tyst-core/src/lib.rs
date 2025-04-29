@@ -21,6 +21,9 @@
 
 mod factory_registry;
 
+#[cfg(feature = "internal")]
+pub use tyst_crypto::misc;
+
 #[cfg(test)]
 pub mod test {
     //! Test utilities.
@@ -41,8 +44,6 @@ use traits::digest::Digest;
 use traits::digest::DigestParams;
 use traits::factory::Factory;
 use traits::factory::FactoryRegistry;
-use traits::kdf::Kdf;
-use traits::kdf::KdfParams;
 use traits::kem::Kem;
 use traits::kem::KemParams;
 use traits::mac::Mac;
@@ -71,8 +72,6 @@ Singleton factory registry for all cryptographic algorithms implementations.
 pub struct Tyst {
     /// Message digest (hash) factories
     digests: FactoryRegistryImpl<dyn Factory<Type = dyn Digest, Parameters = DigestParams>>,
-    /// Key Derivation Function (KDF) factories
-    kdfs: FactoryRegistryImpl<dyn Factory<Type = dyn Kdf, Parameters = KdfParams>>,
     /// Key Encapsulation Mechanism (KEM) factories
     kems: FactoryRegistryImpl<dyn Factory<Type = dyn Kem, Parameters = KemParams>>,
     /// Message Authentication Code (MAC) factories
@@ -92,7 +91,6 @@ impl Default for Tyst {
     fn default() -> Self {
         let ret = Self {
             digests: FactoryRegistryImpl::default(),
-            kdfs: FactoryRegistryImpl::default(),
             kems: FactoryRegistryImpl::default(),
             macs: FactoryRegistryImpl::default(),
             prngs: FactoryRegistryImpl::default(),
@@ -137,12 +135,6 @@ impl CryptoRegistry for Tyst {
     ) -> &dyn FactoryRegistry<Fact = dyn Factory<Type = dyn Digest, Parameters = DigestParams>>
     {
         &self.digests
-    }
-
-    fn kdfs(
-        &self,
-    ) -> &dyn FactoryRegistry<Fact = dyn Factory<Type = dyn Kdf, Parameters = KdfParams>> {
-        &self.kdfs
     }
 
     fn kems(
@@ -196,9 +188,6 @@ impl Tyst {
     fn add_crypto_bundle_internal(&self, crypto_bundle: Box<dyn CryptoBundle>) {
         for factory in crypto_bundle.provided_digests() {
             self.digests.register(factory);
-        }
-        for factory in crypto_bundle.provided_kdfs() {
-            self.kdfs.register(factory);
         }
         for factory in crypto_bundle.provided_kems() {
             self.kems.register(factory);

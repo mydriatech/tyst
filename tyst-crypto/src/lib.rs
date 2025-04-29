@@ -25,13 +25,17 @@ mod digest {
     pub mod sha3_digest;
     pub mod shake_digest;
 }
-mod kdf {
-    //! Key Derivation Function (KDF) implementations
-    pub mod pbkdf2;
-}
 mod mac {
     //! Message authentication code (MAC) implementations
     pub mod hmac;
+}
+pub mod misc {
+    //! Miscellaneous cryptographic primitive implementations.
+    mod pbkdf2;
+    mod pbmac1;
+
+    pub use self::pbkdf2::Pbkdf2;
+    pub use self::pbmac1::Pbmac1;
 }
 mod prng {
     //! Psuedo-Random Number Generator (PRNG) / Deterministic Random Bit Generator (DRBG) implementations
@@ -55,8 +59,6 @@ use std::sync::Arc;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::Factory;
-use tyst_traits::kdf::Kdf;
-use tyst_traits::kdf::KdfParams;
 use tyst_traits::mac::Mac;
 use tyst_traits::mac::MacParams;
 use tyst_traits::prng::SecureRandom;
@@ -78,10 +80,6 @@ impl CryptoBundle for StandardCryptoBundle {
             Arc::new(digest::sha3_digest::Sha3DigestFactory::default()),
             Arc::new(digest::shake_digest::ShakeDigestFactory::default()),
         ]
-    }
-
-    fn provided_kdfs(&self) -> Vec<Arc<dyn Factory<Type = dyn Kdf, Parameters = KdfParams>>> {
-        vec![Arc::new(kdf::pbkdf2::Pbkdf2KdfFactory::default())]
     }
 
     fn provided_macs(&self) -> Vec<Arc<dyn Factory<Type = dyn Mac, Parameters = MacParams>>> {

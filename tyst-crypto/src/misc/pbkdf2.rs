@@ -15,101 +15,84 @@
     limitations under the License.
 */
 
-//! Password-Based Key Derivation Function 2 (PBKDF2) defined in
-//! [RFC 8018 5.2](https://www.rfc-editor.org/rfc/rfc8018#section-5.2).
+//! Password-Based Key Derivation Function 2 (PBKDF2).
 
-use tyst_traits::factory::AlgorithmMetaData;
-use tyst_traits::factory::Factory;
-use tyst_traits::kdf::Kdf;
-use tyst_traits::kdf::KdfParams;
 use tyst_traits::mac::Mac;
 use tyst_traits::mac::ToMacKey;
-use tyst_traits::CryptoRegistry;
 
-/// Factory for [Pbkdf2].
-pub struct Pbkdf2KdfFactory {
-    provided: Vec<AlgorithmMetaData>,
-}
-
-impl Default for Pbkdf2KdfFactory {
-    // iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-5(5) pBKDF2(12)
-
-    fn default() -> Self {
-        Self {
-            provided: vec![AlgorithmMetaData::new("PBKDF2", env!("CARGO_PKG_NAME"))
-                .set_oid("1.2.840.113549.1.5.12")],
-        }
-    }
-}
-
-impl Factory for Pbkdf2KdfFactory {
-    type Type = dyn Kdf;
-    type Parameters = KdfParams;
-
-    fn get_algorithm_meta_datas(&self) -> &[AlgorithmMetaData] {
-        &self.provided
-    }
-
-    fn new_by_name(
-        &self,
-        registry: Box<&'static dyn CryptoRegistry>,
-        algorithm_name: &str,
-        params: Self::Parameters,
-    ) -> Box<Self::Type> {
-        match algorithm_name {
-            "PBKDF2" => {
-                let prf_oid = params
-                    .psuedo_random_function()
-                    // default to HMAC-SHA3-512
-                    .unwrap_or(vec![2, 16, 840, 1, 101, 3, 4, 2, 16]);
-                let prf = registry
-                    .macs()
-                    .by_oid(&tyst_encdec::oid::as_string(&prf_oid))
-                    .unwrap();
-                Box::new(Pbkdf2::new(prf))
-            }
-            _ => panic!("not implemented"),
-        }
-    }
-}
-
-/// [RFC 8018 5.2](https://www.rfc-editor.org/rfc/rfc8018#section-5.2)
-/// defines PBKDF2.
-#[allow(dead_code)]
+/// Password-Based Key Derivation Function 2 (PBKDF2) defined in
+/// [RFC 8018 5.2](https://www.rfc-editor.org/rfc/rfc8018#section-5.2).
 pub struct Pbkdf2 {
     prf: Box<dyn Mac>,
 }
 
 impl Pbkdf2 {
-    #[allow(clippy::redundant_allocation)]
+    /// iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-5(5) pBKDF2(12)
+    pub const OID: &[u32] = &[2, 16, 840, 113549, 1, 5, 12];
+
+    /// Return a new instance using the provided [Mac].
     pub fn new(prf: Box<dyn Mac>) -> Self {
         Self { prf }
     }
 
-    fn f(&mut self, password: &[u8], salt: &[u8], c: usize, i: usize, output_slice: &mut [u8]) {
-        let mut u = vec![0u8; output_slice.len()];
-        self.prf.init(password.to_mac_key().as_ref());
-        // four-octet encoding of the integer i, most significant octet first
-        self.prf.update(salt);
-        self.prf.update(&u32::try_from(i).unwrap().to_be_bytes());
-        self.prf.finalize(&mut u);
-        output_slice.clone_from_slice(&u);
-        for _count in 1..c {
-            self.prf.init(password.to_mac_key().as_ref());
-            self.prf.update(&u);
-            self.prf.finalize(&mut u);
-            for i in 0..u.len() {
-                output_slice[i] ^= u[i];
-            }
-        }
-    }
-}
-
-impl Kdf for Pbkdf2 {
-    fn get_algorithm_name(&self) -> String {
+    /// Get human readable implementation identifier.
+    pub fn get_algorithm_name(&self) -> String {
         "PBKDF2".to_string()
     }
-    fn derive(&mut self, password: &[u8], salt: &[u8], iterations: usize, output: &mut [u8]) {
+
+    /** Derive a key using the provided input.
+
+    [RFC 8018 4.2](https://www.rfc-editor.org/rfc/rfc8018#section-4.1):
+
+    ```text
+    In password-based encryption, the party encrypting a message can gain
+    assurance that these benefits are realized simply by selecting a
+    large and sufficiently random salt when deriving an encryption key
+    from a password.
+
+    The salt might have an additional, non-random octet that specifies whether
+    the derived key is for encryption, for message authentication, or for some
+    other operation.
+
+    ...
+
+    It should be at least eight octets (64 bits) long.
+    ```
+
+    [RFC 8018 4.2](https://www.rfc-editor.org/rfc/rfc8018#section-4.2):
+
+    ```text
+    Mathematically, an iteration count of c will increase the security strength
+    of a password by log2(c) bits against trial-based attacks like brute force
+    or dictionary attacks.
+
+    ...
+
+    A minimum iteration count of 1,000 is recommended.
+    ```
+    */
+    pub fn derive_key_with_len(
+        &mut self,
+        password: &[u8],
+        salt: &[u8],
+        iterations: usize,
+        output_len_bytes: usize,
+    ) -> Vec<u8> {
+        let mut output = vec![0u8; output_len_bytes];
+        self.derive_key(password, salt, iterations, &mut output);
+        output
+    }
+
+    /// Derive a key using the provided input.
+    ///
+    /// See also [Self::derive_key_with_len].
+    pub fn derive_key(
+        &mut self,
+        password: &[u8],
+        salt: &[u8],
+        iterations: usize,
+        output: &mut [u8],
+    ) {
         let h_len = self.prf.get_mac_size_bits() >> 3;
         let dk_len = output.len();
         if dk_len > usize::try_from(u32::MAX).unwrap() * h_len {
@@ -133,16 +116,34 @@ impl Kdf for Pbkdf2 {
         self.f(password, salt, iterations, l, &mut last);
         output[dk_len - r..dk_len].clone_from_slice(&last[0..r]);
     }
+
+    fn f(&mut self, password: &[u8], salt: &[u8], c: usize, i: usize, output_slice: &mut [u8]) {
+        let mut u = vec![0u8; output_slice.len()];
+        self.prf.init(password.to_mac_key().as_ref());
+        // four-octet encoding of the integer i, most significant octet first
+        self.prf.update(salt);
+        self.prf.update(&u32::try_from(i).unwrap().to_be_bytes());
+        self.prf.finalize(&mut u);
+        output_slice.clone_from_slice(&u);
+        for _count in 1..c {
+            self.prf.init(password.to_mac_key().as_ref());
+            self.prf.update(&u);
+            self.prf.finalize(&mut u);
+            for i in 0..u.len() {
+                output_slice[i] ^= u[i];
+            }
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::digest::sha3_digest::Sha3Digest;
-    use crate::kdf::pbkdf2::Pbkdf2;
     use crate::mac::hmac::HmacMac;
     use std::ops::Deref;
     use std::sync::LazyLock;
+    use tyst_traits::CryptoRegistry;
 
     pub struct DummyCryptoRegistry {}
     impl CryptoRegistry for DummyCryptoRegistry {}
@@ -244,28 +245,15 @@ mod tests {
 
     #[test]
     fn test_pbkdf2() {
-        for (prf_oid, password_hex, salt_hex, iterations, exptected_hex) in TEST_VECTORS {
+        for (prf_oid, password_hex, salt_hex, iterations, expected_hex) in TEST_VECTORS {
             let password = tyst_encdec::hex::decode(&password_hex).unwrap();
             let salt = tyst_encdec::hex::decode(&salt_hex).unwrap();
-            let expected = tyst_encdec::hex::decode(&exptected_hex).unwrap();
+            let expected = tyst_encdec::hex::decode(&expected_hex).unwrap();
             let prf = get_hmac(prf_oid);
-            let mut kdf = Box::new(Pbkdf2::new(prf)) as Box<dyn Kdf>;
-            let mut actual = vec![0u8; expected.len()];
-            kdf.derive(&password, &salt, *iterations, &mut actual);
+            let mut pbkdf2 = Pbkdf2::new(prf);
+            let actual = pbkdf2.derive_key_with_len(&password, &salt, *iterations, expected.len());
             assert_eq!(actual, expected);
         }
-        /*
-        let password = tyst_encdec::hex::decode("70617373776f7264").unwrap();
-        let salt = tyst_encdec::hex::decode("73616c74").unwrap();
-        let n = 1;
-        let expected =
-            tyst_encdec::hex::decode("f7a2684630ec0f81f23abbf606278deeaad1a350").unwrap();
-        let prf = get_hmac("2.16.840.1.101.3.4.2.16");
-        let mut kdf = Box::new(Pbkdf2::new(prf)) as Box<dyn Kdf>;
-        let mut actual = vec![0u8; expected.len()];
-        kdf.derive(&password, &salt, n, &mut actual);
-        assert_eq!(actual, expected);
-        */
     }
 
     fn get_hmac(oid: &str) -> Box<dyn Mac> {
