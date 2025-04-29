@@ -21,6 +21,13 @@ use tyst_traits::mac::Mac;
 use tyst_traits::mac::ToMacKey;
 
 use super::Pbkdf2;
+use rasn::prelude::*;
+
+#[derive(AsnType, Debug, Clone, Decode, Encode, PartialEq, PartialOrd, Eq, Ord, Hash)]
+pub struct Pbmac1Parameter {
+    pub key_derivation_func: rasn_pkix::AlgorithmIdentifier,
+    pub message_auth_scheme: rasn_pkix::AlgorithmIdentifier,
+}
 
 /// Password-Based Message Authentication Code 1 (PBMAC1) defined in
 /// [RFC 8018 7.1](https://www.rfc-editor.org/rfc/rfc8018#section-7.1).
@@ -44,18 +51,32 @@ impl Pbmac1 {
         "PBMAC1".to_string()
     }
 
+    /// Get DER encoded `AlgorithmIdentifier`
+    pub fn get_algorithm_identifier(&self) -> Vec<u8> {
+        let key_derivation_func = rasn::der::decode::<rasn_pkix::AlgorithmIdentifier>(
+            &self.pbkdf2.get_algorithm_identifier(),
+        )
+        .unwrap();
+        let message_auth_scheme = rasn::der::decode::<rasn_pkix::AlgorithmIdentifier>(
+            &self.mac.get_algorithm_identifier().unwrap(),
+        )
+        .unwrap();
+        rasn::der::encode(&rasn_pkix::AlgorithmIdentifier {
+            algorithm: rasn::types::ObjectIdentifier::new_unchecked(Self::OID.to_vec().into()),
+            parameters: Some(rasn::types::Any::new(
+                rasn::der::encode(&Pbmac1Parameter {
+                    key_derivation_func,
+                    message_auth_scheme,
+                })
+                .unwrap(),
+            )),
+        })
+        .unwrap()
+    }
+
     /// Create password based MAC.
-    pub fn pbmac(
-        &mut self,
-        password: &[u8],
-        salt: &[u8],
-        iterations: usize,
-        message: &[u8],
-    ) -> Vec<u8> {
-        let dk_len = self.mac.get_mac_size_bits() >> 3;
-        let dk = self
-            .pbkdf2
-            .derive_key_with_len(password, salt, iterations, dk_len);
+    pub fn pbmac(&mut self, password: &[u8], message: &[u8]) -> Vec<u8> {
+        let dk = self.pbkdf2.derive_key(password);
         self.mac.mac(dk.to_mac_key().as_ref(), message)
     }
 }
@@ -135,8 +156,9 @@ mod tests {
             let salt = tyst_encdec::hex::decode(&salt_hex).unwrap();
             let prf = get_hmac(prf_oid);
             let mac = get_hmac(prf_oid);
-            let actual_hex = Pbmac1::new(mac, Pbkdf2::new(prf))
-                .pbmac(&password, &salt, *iterations, message.as_bytes())
+            let dk_len = mac.get_mac_size_bits() >> 3;
+            let actual_hex = Pbmac1::new(mac, Pbkdf2::new(&salt, *iterations, dk_len, prf))
+                .pbmac(&password, message.as_bytes())
                 .to_hex();
             assert_eq!(&actual_hex, expected_hex);
         }

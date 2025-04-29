@@ -69,15 +69,16 @@ pub async fn pbkdf2_derive(request: Json<KdfRequest>) -> Result<impl Responder> 
     }
     // TODO: Make this a query param (instead of hard-coding HMAC-SHA3-512)
     if let Some(prf) = Tyst::instance().macs().by_name("HMAC-SHA3-512") {
-        let mut response = KdfResponse {
-            derived_key_b64: vec![0u8; usize::try_from(request.output_len).unwrap()],
+        let response = KdfResponse {
+            derived_key_b64: tyst::misc::Pbkdf2::new(
+                &request.salt_b64,
+                usize::try_from(request.iterations).unwrap(),
+                usize::try_from(request.output_len).unwrap(),
+                prf,
+            )
+            .derive_key(&request.password_b64),
         };
-        tyst::misc::Pbkdf2::new(prf).derive_key(
-            &request.password_b64,
-            &request.salt_b64,
-            usize::try_from(request.iterations).unwrap(),
-            &mut response.derived_key_b64,
-        );
+
         Ok(HttpResponse::build(StatusCode::OK)
             .body(serde_json::to_string_pretty(&response).unwrap()))
     } else {

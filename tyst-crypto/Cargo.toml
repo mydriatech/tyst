@@ -21,6 +21,7 @@ constant_time_eq = { version = "0.3", default-features = false, features = [] }
 # ASN.1
 rasn = { workspace = true, features = [] }
 rasn-pkix = { workspace = true, features = [] }
+rasn-cms = { workspace = true, features = [] }
 
 [dev-dependencies]
 # Logging and tracing
