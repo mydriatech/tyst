@@ -15,27 +15,23 @@
     limitations under the License.
 */
 
-//! Example of using Key Derivation Function (KDF) API
+//! Example of using Password-Based Key Derivation Function 2 (PBKDF2).
 
 use tyst::encdec::hex::ToHex;
 use tyst::Tyst;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!(
-        "Available algorithms: {:?}",
-        Tyst::instance().kdfs().get_algorithms()
-    );
-    let key_len = 64;
-    let mut derived_key = vec![0u8; key_len];
-    Tyst::instance().kdfs().by_name("PBKDF2").unwrap().derive(
+    let prf = Tyst::instance().macs().by_name("HMAC-SHA3-512").unwrap();
+    let mut pbkdf2 = tyst::misc::Pbkdf2::new(prf);
+    let derived_key = pbkdf2.derive_key_with_len(
         b"password",
         b"salt should be as long as the HMAC output function",
         123,
-        &mut derived_key,
+        64,
     );
     println!(
         "Derived a key with {} bytes (hex): {}",
-        key_len,
+        derived_key.len(),
         derived_key.to_hex()
     );
     Ok(())

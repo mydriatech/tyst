@@ -40,9 +40,10 @@ You can find many examples in the `examples/` directory.
 ```text
 # You can run these from the repository root
 cargo run --example digest_example
-cargo run --example kdf_example
 cargo run --example kem_example
 cargo run --example mac_example
 cargo run --example prng_example
 cargo run --example se_example
+
+cargo run --example pbkdf2_example
 ```

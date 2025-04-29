@@ -262,146 +262,6 @@
         }
       }
     },
-    "/kdf/{algorithm}/derive": {
-      "post": {
-        "tags": [
-          "kdf_resources"
-        ],
-        "summary": "Derive Key",
-        "description": "Derive Key using Key Derivation Function (KDF).",
-        "operationId": "derive",
-        "parameters": [
-          {
-            "name": "algorithm",
-            "in": "path",
-            "description": "The KDF algorithm.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "password_b64",
-                  "salt_b64",
-                  "iterations",
-                  "output_len"
-                ],
-                "properties": {
-                  "iterations": {
-                    "type": "integer",
-                    "format": "int64",
-                    "minimum": 0
-                  },
-                  "output_len": {
-                    "type": "integer",
-                    "format": "int64",
-                    "minimum": 0
-                  },
-                  "password_b64": {
-                    "type": "array",
-                    "items": {
-                      "type": "integer",
-                      "format": "int32",
-                      "minimum": 0
-                    }
-                  },
-                  "salt_b64": {
-                    "type": "array",
-                    "items": {
-                      "type": "integer",
-                      "format": "int32",
-                      "minimum": 0
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "derived_key_b64"
-                  ],
-                  "properties": {
-                    "derived_key_b64": {
-                      "type": "array",
-                      "items": {
-                        "type": "integer",
-                        "format": "int32",
-                        "minimum": 0
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Fail"
-          }
-        }
-      }
-    },
-    "/kdfs": {
-      "get": {
-        "tags": [
-          "kdf_resources"
-        ],
-        "summary": "List available KDF algorithms",
-        "description": "List all available Key Derivation Function (KDF) algorithms.",
-        "operationId": "kdfs",
-        "responses": {
-          "200": {
-            "description": "List of available algorithms",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "required": [
-                      "name",
-                      "provider_id",
-                      "confinement_type"
-                    ],
-                    "properties": {
-                      "confinement_type": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "oid": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      },
-                      "provider_id": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/kem/{algorithm}/decapsulate": {
       "post": {
         "tags": [
@@ -1003,6 +863,88 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/misc/PBKDF2/derive": {
+      "post": {
+        "tags": [
+          "misc_resources"
+        ],
+        "summary": "PBKDF2",
+        "description": "Password-Based Key Derivation Function 2 (PBKDF2).",
+        "operationId": "pbkdf2_derive",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "password_b64",
+                  "salt_b64",
+                  "iterations",
+                  "output_len"
+                ],
+                "properties": {
+                  "iterations": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0
+                  },
+                  "output_len": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 0
+                  },
+                  "password_b64": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  },
+                  "salt_b64": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "derived_key_b64"
+                  ],
+                  "properties": {
+                    "derived_key_b64": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "format": "int32",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Fail"
           }
         }
       }
