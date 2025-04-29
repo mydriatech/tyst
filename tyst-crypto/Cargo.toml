@@ -16,7 +16,7 @@ tyst_encdec = { path = "../tyst-encdec" }
 log = { workspace = true, features = [] }
 
 getrandom = { version = "0.3", default-features = false, features = [] }
-constant_time_eq = { version = "0.3", default-features = false, features = [] }
+constant_time_eq = { version = "0.4", default-features = false, features = [] }
 
 # ASN.1
 rasn = { workspace = true, features = [] }
