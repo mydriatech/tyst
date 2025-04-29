@@ -88,6 +88,11 @@ pub trait Mac: Send {
     /// Get human readable implementation identifier.
     fn get_algorithm_name(&self) -> String;
 
+    /// Get DER encoded `AlgorithmIdentifier` if available for this algorithm.
+    fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
+        None
+    }
+
     /// Convinience method for initializing, ingesting the provided data and
     /// returning the output state (MAC) in a single invocation.
     fn mac(&mut self, key: &dyn MacKey, data: &[u8]) -> Vec<u8> {

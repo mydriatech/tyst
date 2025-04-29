@@ -23,6 +23,9 @@ use tyst_traits::mac::ToMacKey;
 /// Password-Based Key Derivation Function 2 (PBKDF2) defined in
 /// [RFC 8018 5.2](https://www.rfc-editor.org/rfc/rfc8018#section-5.2).
 pub struct Pbkdf2 {
+    salt: Vec<u8>,
+    iteration_count: usize,
+    dk_len: usize,
     prf: Box<dyn Mac>,
 }
 
@@ -30,17 +33,7 @@ impl Pbkdf2 {
     /// iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-5(5) pBKDF2(12)
     pub const OID: &[u32] = &[2, 16, 840, 113549, 1, 5, 12];
 
-    /// Return a new instance using the provided [Mac].
-    pub fn new(prf: Box<dyn Mac>) -> Self {
-        Self { prf }
-    }
-
-    /// Get human readable implementation identifier.
-    pub fn get_algorithm_name(&self) -> String {
-        "PBKDF2".to_string()
-    }
-
-    /** Derive a key using the provided input.
+    /** Return a new instance using the provided [Mac].
 
     [RFC 8018 4.2](https://www.rfc-editor.org/rfc/rfc8018#section-4.1):
 
@@ -71,50 +64,72 @@ impl Pbkdf2 {
     A minimum iteration count of 1,000 is recommended.
     ```
     */
-    pub fn derive_key_with_len(
-        &mut self,
-        password: &[u8],
-        salt: &[u8],
-        iterations: usize,
-        output_len_bytes: usize,
-    ) -> Vec<u8> {
-        let mut output = vec![0u8; output_len_bytes];
-        self.derive_key(password, salt, iterations, &mut output);
-        output
+    pub fn new(salt: &[u8], iteration_count: usize, key_length: usize, prf: Box<dyn Mac>) -> Self {
+        Self {
+            salt: salt.to_vec(),
+            iteration_count,
+            dk_len: key_length,
+            prf,
+        }
+    }
+
+    /// Get human readable implementation identifier.
+    pub fn get_algorithm_name(&self) -> String {
+        "PBKDF2".to_string()
+    }
+
+    /// Get DER encoded `AlgorithmIdentifier`
+    pub fn get_algorithm_identifier(&self) -> Vec<u8> {
+        let prf = self
+            .prf
+            .get_algorithm_identifier()
+            .map(|algorithm_identifier| {
+                rasn::der::decode::<rasn_pkix::AlgorithmIdentifier>(&algorithm_identifier).unwrap()
+            })
+            .unwrap();
+        rasn::der::encode(&rasn_pkix::AlgorithmIdentifier {
+            algorithm: rasn::types::ObjectIdentifier::new_unchecked(Self::OID.to_vec().into()),
+            parameters: Some(rasn::types::Any::new(
+                rasn::der::encode(&rasn_cms::algorithms::Pbkdf2Parameters {
+                    salt: rasn_cms::algorithms::Pbkdf2Salt::Specified(
+                        rasn::types::OctetString::from(self.salt.clone()),
+                    ),
+                    iteration_count: self.iteration_count.into(),
+                    key_length: Some(self.dk_len.into()),
+                    prf,
+                })
+                .unwrap(),
+            )),
+        })
+        .unwrap()
     }
 
     /// Derive a key using the provided input.
-    ///
-    /// See also [Self::derive_key_with_len].
-    pub fn derive_key(
-        &mut self,
-        password: &[u8],
-        salt: &[u8],
-        iterations: usize,
-        output: &mut [u8],
-    ) {
+    pub fn derive_key(&mut self, password: &[u8]) -> Vec<u8> {
+        let mut output = vec![0u8; self.dk_len];
         let h_len = self.prf.get_mac_size_bits() >> 3;
-        let dk_len = output.len();
-        if dk_len > usize::try_from(u32::MAX).unwrap() * h_len {
+        let salt = &self.salt.to_owned();
+        if self.dk_len > usize::try_from(u32::MAX).unwrap() * h_len {
             panic!("derived key too long");
         }
         // the number of hLen-octet blocks in the derived key
-        let l = dk_len.div_ceil(h_len);
+        let l = self.dk_len.div_ceil(h_len);
         // the number of octets in the last block
-        let r = dk_len - (l - 1) * h_len;
+        let r = self.dk_len - (l - 1) * h_len;
         //log::debug!("h_len: {h_len}, dk_len: {dk_len}, l: {l}, r: {r}");
         for i in 1..l {
             self.f(
                 password,
                 salt,
-                iterations,
+                self.iteration_count,
                 i,
                 &mut output[(i - 1) * h_len..i * h_len],
             );
         }
         let mut last = vec![0u8; h_len];
-        self.f(password, salt, iterations, l, &mut last);
-        output[dk_len - r..dk_len].clone_from_slice(&last[0..r]);
+        self.f(password, salt, self.iteration_count, l, &mut last);
+        output[self.dk_len - r..self.dk_len].clone_from_slice(&last[0..r]);
+        output
     }
 
     fn f(&mut self, password: &[u8], salt: &[u8], c: usize, i: usize, output_slice: &mut [u8]) {
@@ -250,8 +265,8 @@ mod tests {
             let salt = tyst_encdec::hex::decode(&salt_hex).unwrap();
             let expected = tyst_encdec::hex::decode(&expected_hex).unwrap();
             let prf = get_hmac(prf_oid);
-            let mut pbkdf2 = Pbkdf2::new(prf);
-            let actual = pbkdf2.derive_key_with_len(&password, &salt, *iterations, expected.len());
+            let mut pbkdf2 = Pbkdf2::new(&salt, *iterations, expected.len(), prf);
+            let actual = pbkdf2.derive_key(&password);
             assert_eq!(actual, expected);
         }
     }

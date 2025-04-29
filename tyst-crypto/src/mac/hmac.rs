@@ -224,6 +224,22 @@ impl<const B: usize> Mac for HmacMac<B> {
     fn get_algorithm_name(&self) -> String {
         "HMAC-".to_string() + &self.digest.get_algorithm_name()
     }
+
+    fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
+        let oid = match self.get_algorithm_name().as_str() {
+            "HMAC-SHA3-256" => vec![2, 16, 840, 1, 101, 3, 4, 2, 14],
+            "HMAC-SHA3-384" => vec![2, 16, 840, 1, 101, 3, 4, 2, 15],
+            "HMAC-SHA3-512" => vec![2, 16, 840, 1, 101, 3, 4, 2, 16],
+            other => panic!("Unknown algorithm '{other}'."),
+        };
+        Some(
+            rasn::der::encode(&rasn_pkix::AlgorithmIdentifier {
+                algorithm: rasn::types::ObjectIdentifier::new_unchecked(oid.into()),
+                parameters: Some(rasn::types::Any::new(rasn::der::encode(&()).unwrap())),
+            })
+            .unwrap(),
+        )
+    }
 }
 
 #[cfg(test)]

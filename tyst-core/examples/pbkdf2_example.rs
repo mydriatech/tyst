@@ -22,13 +22,13 @@ use tyst::Tyst;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let prf = Tyst::instance().macs().by_name("HMAC-SHA3-512").unwrap();
-    let mut pbkdf2 = tyst::misc::Pbkdf2::new(prf);
-    let derived_key = pbkdf2.derive_key_with_len(
-        b"password",
+    let mut pbkdf2 = tyst::misc::Pbkdf2::new(
         b"salt should be as long as the HMAC output function",
         123,
         64,
+        prf,
     );
+    let derived_key = pbkdf2.derive_key(b"password");
     println!(
         "Derived a key with {} bytes (hex): {}",
         derived_key.len(),
