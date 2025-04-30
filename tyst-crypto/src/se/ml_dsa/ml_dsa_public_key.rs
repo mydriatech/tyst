@@ -17,10 +17,10 @@
 
 //! ML-DSA public key.
 
-use std::error::Error;
-use tyst_traits::se::PublicKey;
 use super::MldsaParams;
 use super::MldsaSignatureEngineFactory;
+use std::error::Error;
+use tyst_traits::se::PublicKey;
 
 /// ML-DSA public key.
 pub struct MldsaPublicKey {
