@@ -23,6 +23,8 @@ use tyst_traits::mac::ToMacKey;
 use super::Pbkdf2;
 use rasn::prelude::*;
 
+/// Password-Based Message Authentication Code 1 (PBMAC1) paramets defined in
+/// [RFC 8018 A.5](https://www.rfc-editor.org/rfc/rfc8018#appendix-A.5)
 #[derive(AsnType, Debug, Clone, Decode, Encode, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct Pbmac1Parameter {
     pub key_derivation_func: rasn_pkix::AlgorithmIdentifier,
