@@ -89,7 +89,7 @@ impl PublicKey for MldsaPublicKey {
         rasn::der::encode(&rasn_pkix::SubjectPublicKeyInfo {
             algorithm: rasn_pkix::AlgorithmIdentifier {
                 algorithm: rasn::types::ObjectIdentifier::new_unchecked(oid.into()),
-                parameters: None,
+                parameters: Some(rasn::types::Any::new(rasn::der::encode(&()).unwrap())),
             },
             subject_public_key: rasn::types::BitString::from_vec(Self::encode(&self.rho, &self.t1)),
         })
