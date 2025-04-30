@@ -31,7 +31,7 @@ pub struct Pbkdf2 {
 
 impl Pbkdf2 {
     /// iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-5(5) pBKDF2(12)
-    pub const OID: &[u32] = &[2, 16, 840, 113549, 1, 5, 12];
+    pub const OID: &[u32] = &[1, 2, 840, 113549, 1, 5, 12];
 
     /** Return a new instance using the provided [Mac].
 
