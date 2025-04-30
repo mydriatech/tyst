@@ -169,8 +169,8 @@ impl SignatureEngine for MldsaEngine {
         };
         let algorithm_identifier = rasn_pkix::AlgorithmIdentifier {
             algorithm,
-            // https://www.rfc-editor.org/rfc/rfc8410#section-6
-            parameters: Some(rasn::types::Any::new(rasn::der::encode(&()).unwrap())),
+            //parameters: Some(rasn::types::Any::new(rasn::der::encode(&()).unwrap())),
+            parameters: None,
         };
         rasn::der::encode(&algorithm_identifier).ok()
     }
