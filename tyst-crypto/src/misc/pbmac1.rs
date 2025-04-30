@@ -41,7 +41,7 @@ pub struct Pbmac1 {
 
 impl Pbmac1 {
     /// iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-5(5) PBMAC1(14)
-    pub const OID: &[u32] = &[2, 16, 840, 113549, 1, 5, 14];
+    pub const OID: &[u32] = &[1, 2, 840, 113549, 1, 5, 14];
 
     /// Return a new instance using the provided [Mac].
     pub fn new(mac: Box<dyn Mac>, pbkdf2: Pbkdf2) -> Self {
