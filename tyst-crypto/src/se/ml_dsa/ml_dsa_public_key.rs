@@ -17,21 +17,16 @@
 
 //! ML-DSA public key.
 
-use std::error::Error;
-
-use tyst_traits::se::PublicKey;
-
 use super::MldsaParams;
+use super::MldsaSignatureEngineFactory;
+use std::error::Error;
+use tyst_traits::se::PublicKey;
 
 /// ML-DSA public key.
 pub struct MldsaPublicKey {
     rho: Vec<u8>,
     t1: Vec<u8>,
 }
-
-const OID_ML_DSA_44: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 17];
-const OID_ML_DSA_65: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 18];
-const OID_ML_DSA_87: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 19];
 
 impl TryFrom<&dyn PublicKey> for MldsaPublicKey {
     type Error = String;
@@ -44,7 +39,7 @@ impl TryFrom<&dyn PublicKey> for MldsaPublicKey {
         let encoded = spki.subject_public_key.as_raw_slice();
         // Length check using NIST FIPS 204 Table 2
         match spki.algorithm.algorithm.to_vec().as_slice() {
-            OID_ML_DSA_44 => {
+            MldsaSignatureEngineFactory::OID_ML_DSA_44 => {
                 if encoded.len() != 1312 {
                     return Err(format!(
                         "Public key length for ML-DSA-44 should be {}, not {}.",
@@ -53,7 +48,7 @@ impl TryFrom<&dyn PublicKey> for MldsaPublicKey {
                     ));
                 }
             }
-            OID_ML_DSA_65 => {
+            MldsaSignatureEngineFactory::OID_ML_DSA_65 => {
                 if encoded.len() != 1952 {
                     return Err(format!(
                         "Public key length for ML-DSA-44 should be {}, not {}.",
@@ -62,7 +57,7 @@ impl TryFrom<&dyn PublicKey> for MldsaPublicKey {
                     ));
                 }
             }
-            OID_ML_DSA_87 => {
+            MldsaSignatureEngineFactory::OID_ML_DSA_87 => {
                 if encoded.len() != 2592 {
                     return Err(format!(
                         "Public key length for ML-DSA-44 should be {}, not {}.",
@@ -81,15 +76,15 @@ impl PublicKey for MldsaPublicKey {
     fn try_as_spki(&self) -> Result<Vec<u8>, Box<dyn Error>> {
         let oid = match self.t1.len() / MldsaParams::POLY_T1_PACKED_BYTES {
             // Match MldsaParams.k
-            4 => OID_ML_DSA_44,
-            6 => OID_ML_DSA_65,
-            8 => OID_ML_DSA_87,
+            4 => MldsaSignatureEngineFactory::OID_ML_DSA_44,
+            6 => MldsaSignatureEngineFactory::OID_ML_DSA_65,
+            8 => MldsaSignatureEngineFactory::OID_ML_DSA_87,
             _ => panic!(),
         };
         rasn::der::encode(&rasn_pkix::SubjectPublicKeyInfo {
             algorithm: rasn_pkix::AlgorithmIdentifier {
                 algorithm: rasn::types::ObjectIdentifier::new_unchecked(oid.into()),
-                parameters: None,
+                parameters: Some(rasn::types::Any::new(rasn::der::encode(&()).unwrap())),
             },
             subject_public_key: rasn::types::BitString::from_vec(Self::encode(&self.rho, &self.t1)),
         })
