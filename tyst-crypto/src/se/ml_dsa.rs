@@ -67,24 +67,36 @@ pub struct MldsaSignatureEngineFactory {
     provided: Vec<AlgorithmMetaData>,
 }
 
-//joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3)
-//  id-ml-dsa-44(17)
-//  id-ml-dsa-65(18)
-//  id-ml-dsa-87(19)
-//  id-hash-ml-dsa-44-with-sha512(32)
-//  id-hash-ml-dsa-65-with-sha512(33)
-//  id-hash-ml-dsa-87-with-sha512(34)
+impl MldsaSignatureEngineFactory {
+    /// `2.16.840.1.101.3.4.3.17`
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3) ml-dsa-44(17)
+    const OID_ML_DSA_44: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 3, 17];
+    /// `2.16.840.1.101.3.4.3.18`
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3) ml-dsa-65(18)
+    const OID_ML_DSA_65: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 3, 18];
+    /// `2.16.840.1.101.3.4.3.18`
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3) ml-dsa-87(19)
+    const OID_ML_DSA_87: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 3, 19];
+
+    //  id-hash-ml-dsa-44-with-sha512(32)
+    //  id-hash-ml-dsa-65-with-sha512(33)
+    //  id-hash-ml-dsa-87-with-sha512(34)
+}
+
 
 impl Default for MldsaSignatureEngineFactory {
     fn default() -> Self {
         Self {
             provided: vec![
                 AlgorithmMetaData::new("ML-DSA-44", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.3.17"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_ML_DSA_44)),
                 AlgorithmMetaData::new("ML-DSA-65", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.3.18"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_ML_DSA_65)),
                 AlgorithmMetaData::new("ML-DSA-87", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.3.19"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_ML_DSA_87)),
             ],
         }
     }
@@ -144,13 +156,13 @@ impl SignatureEngine for MldsaEngine {
     fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
         let algorithm = match self.algorithm_name.as_str() {
             "ML-DSA-44" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 3, 17]).unwrap(),
+                rasn::types::Oid::new(MldsaSignatureEngineFactory::OID_ML_DSA_44).unwrap(),
             ),
             "ML-DSA-65" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 3, 18]).unwrap(),
+                rasn::types::Oid::new(MldsaSignatureEngineFactory::OID_ML_DSA_65).unwrap(),
             ),
             "ML-DSA-87" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 3, 19]).unwrap(),
+                rasn::types::Oid::new(MldsaSignatureEngineFactory::OID_ML_DSA_87).unwrap(),
             ),
             bad_alg => {
                 panic!("Unsupported signature algorithm '{bad_alg}'.");
@@ -159,7 +171,7 @@ impl SignatureEngine for MldsaEngine {
         let algorithm_identifier = rasn_pkix::AlgorithmIdentifier {
             algorithm,
             // https://www.rfc-editor.org/rfc/rfc8410#section-6
-            parameters: None,
+            parameters: Some(rasn::types::Any::new(rasn::der::encode(&()).unwrap())),
         };
         rasn::der::encode(&algorithm_identifier).ok()
     }
