@@ -32,28 +32,68 @@ pub struct HmacMacFactory {
     provided: Vec<AlgorithmMetaData>,
 }
 
-impl Default for HmacMacFactory {
+impl HmacMacFactory {
     /*
-    oint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithms(4) hashAlgs(2)
-    → 2.16.840.1.101.3.4.2
-
-    id-hmacWithSHA3-224 OBJECT IDENTIFIER ::= { hashAlgs 13 }
-    id-hmacWithSHA3-256 OBJECT IDENTIFIER ::= { hashAlgs 14 }
-    id-hmacWithSHA3-384 OBJECT IDENTIFIER ::= { hashAlgs 15 }
-    id-hmacWithSHA3-512 OBJECT IDENTIFIER ::= { hashAlgs 16 }
-
-    Note that SHA3-224 should not be used after 2023.
+    [RFC 4231](https://www.rfc-editor.org/rfc/rfc4231) Identifiers and Test
+    Vectors for HMAC-SHA-224, HMAC-SHA-256, HMAC-SHA-384, and HMAC-SHA-512
     */
+    /// `1.2.840.113549.2.8`
+    ///
+    /// iso(1) member-body(2) us(840) rsadsi(113549) digestAlgorithm(2) hmacWithSHA224(8)
+    #[allow(dead_code)]
+    const OID_HMAC_SHA_224: &[u32] = &[1, 2, 840, 113549, 2, 8];
+    /// `1.2.840.113549.2.9`
+    ///
+    /// iso(1) member-body(2) us(840) rsadsi(113549) digestAlgorithm(2) hmacWithSHA256(9)
+    const OID_HMAC_SHA_256: &[u32] = &[1, 2, 840, 113549, 2, 9];
+    /// `1.2.840.113549.2.10`
+    ///
+    /// iso(1) member-body(2) us(840) rsadsi(113549) digestAlgorithm(2) hmacWithSHA384(10)
+    const OID_HMAC_SHA_384: &[u32] = &[1, 2, 840, 113549, 2, 10];
+    /// `1.2.840.113549.2.11`
+    ///
+    /// iso(1) member-body(2) us(840) rsadsi(113549) digestAlgorithm(2) hmacWithSHA512(11)
+    const OID_HMAC_SHA_512: &[u32] = &[1, 2, 840, 113549, 2, 11];
+
+    /// `2.16.840.1.101.3.4.2.13`
+    ///
+    /// NOTE: SHA3-224 should not be used after 2023.
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithms(4) hashAlgs(2) hmacWithSHA3-224(13)
+    #[allow(dead_code)]
+    const OID_HMAC_SHA3_224: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 13];
+    /// `2.16.840.1.101.3.4.2.14`
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithms(4) hashAlgs(2) hmacWithSHA3-256(14)
+    const OID_HMAC_SHA3_256: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 14];
+    /// `2.16.840.1.101.3.4.2.15`
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithms(4) hashAlgs(2) hmacWithSHA3-384(15)
+    const OID_HMAC_SHA3_384: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 15];
+    /// `2.16.840.1.101.3.4.2.16`
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithms(4) hashAlgs(2) hmacWithSHA3-512(16)
+    const OID_HMAC_SHA3_512: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 16];
+}
+
+impl Default for HmacMacFactory {
     fn default() -> Self {
         Self {
             provided: vec![
-                //AlgorithmMetaData::new("HMAC-SHA3-224", env!("CARGO_PKG_NAME")).set_oid("2.16.840.1.101.3.4.2.13"),
+                //AlgorithmMetaData::new("HMAC-SHA-224", env!("CARGO_PKG_NAME")).set_oid(&tyst_encdec::oid::as_string(Self::OID_HMAC_SHA_224)),
+                AlgorithmMetaData::new("HMAC-SHA-256", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_HMAC_SHA_256)),
+                AlgorithmMetaData::new("HMAC-SHA-384", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_HMAC_SHA_384)),
+                AlgorithmMetaData::new("HMAC-SHA-512", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_HMAC_SHA_512)),
+                //AlgorithmMetaData::new("HMAC-SHA3-224", env!("CARGO_PKG_NAME")).set_oid(&tyst_encdec::oid::as_string(Self::OID_HMAC_SHA3_224)),
                 AlgorithmMetaData::new("HMAC-SHA3-256", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.14"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_HMAC_SHA3_256)),
                 AlgorithmMetaData::new("HMAC-SHA3-384", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.15"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_HMAC_SHA3_384)),
                 AlgorithmMetaData::new("HMAC-SHA3-512", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.16"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_HMAC_SHA3_512)),
             ],
         }
     }
@@ -74,6 +114,18 @@ impl Factory for HmacMacFactory {
         _params: Self::Parameters,
     ) -> Box<Self::Type> {
         match algorithm_name {
+            "HMAC-SHA-256" => {
+                let digest = registry.digests().by_name("SHA-256").unwrap();
+                Box::new(HmacMac::<64>::new(registry, digest))
+            }
+            "HMAC-SHA-384" => {
+                let digest = registry.digests().by_name("SHA-384").unwrap();
+                Box::new(HmacMac::<128>::new(registry, digest))
+            }
+            "HMAC-SHA-512" => {
+                let digest = registry.digests().by_name("SHA-512").unwrap();
+                Box::new(HmacMac::<128>::new(registry, digest))
+            }
             //"HMAC-SHA3-256" => Box::new(Hmac::new(Digests::default().by_name("SHA3-224", None).unwrap(), 144)),
             "HMAC-SHA3-256" => {
                 let digest = registry.digests().by_name("SHA3-256").unwrap();
@@ -103,6 +155,14 @@ B bytes to avoid key recovery in some scenarios.
 
 Byte-length (B) is defined as:
 
+* 64 bytes for `HMAC-SHA-1`
+* 64 bytes for `HMAC-SHA-224`
+* 64 bytes for `HMAC-SHA-256`
+* 128 bytes for `HMAC-SHA-512/224`
+* 128 bytes for `HMAC-SHA-512/256`
+* 128 bytes for `HMAC-SHA-384`
+* 128 bytes for `HMAC-SHA-512`
+* 144 bytes for `HMAC-SHA3-224`
 * 136 bytes for `HMAC-SHA3-256`
 * 104 bytes for `HMAC-SHA3-384`
 * 72 bytes for `HMAC-SHA3-512`
@@ -227,9 +287,12 @@ impl<const B: usize> Mac for HmacMac<B> {
 
     fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
         let oid = match self.get_algorithm_name().as_str() {
-            "HMAC-SHA3-256" => vec![2, 16, 840, 1, 101, 3, 4, 2, 14],
-            "HMAC-SHA3-384" => vec![2, 16, 840, 1, 101, 3, 4, 2, 15],
-            "HMAC-SHA3-512" => vec![2, 16, 840, 1, 101, 3, 4, 2, 16],
+            "HMAC-SHA-256" => HmacMacFactory::OID_HMAC_SHA_256.to_vec(),
+            "HMAC-SHA-384" => HmacMacFactory::OID_HMAC_SHA_384.to_vec(),
+            "HMAC-SHA-512" => HmacMacFactory::OID_HMAC_SHA_512.to_vec(),
+            "HMAC-SHA3-256" => HmacMacFactory::OID_HMAC_SHA3_256.to_vec(),
+            "HMAC-SHA3-384" => HmacMacFactory::OID_HMAC_SHA3_384.to_vec(),
+            "HMAC-SHA3-512" => HmacMacFactory::OID_HMAC_SHA3_512.to_vec(),
             other => panic!("Unknown algorithm '{other}'."),
         };
         Some(

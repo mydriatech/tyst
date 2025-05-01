@@ -48,6 +48,51 @@ impl Pbmac1 {
         Self { mac, pbkdf2 }
     }
 
+    /// Return a new instance from the AlgorithmIdentifier which includes MAC, salt, c, dk_len and PRF algorithm.
+    pub fn from_algorithm_identifier(
+        crypto_registry_instance: &dyn tyst_traits::CryptoRegistry,
+        algorithm_identifier: &[u8],
+    ) -> Option<Self> {
+        let algorithm_identifier =
+            rasn::der::decode::<rasn_pkix::AlgorithmIdentifier>(algorithm_identifier).unwrap();
+        if !algorithm_identifier.algorithm.to_vec().eq(&Self::OID) {
+            log::debug!(
+                "AlgorithmIdentifier OID was '{:?}'. Expected '{:?}'.",
+                algorithm_identifier.algorithm.to_vec(),
+                Self::OID
+            );
+            return None;
+        }
+        if let Some(parameters) = algorithm_identifier.parameters {
+            let parameters =
+                rasn::der::decode::<Pbmac1Parameter>(&parameters.into_bytes()).unwrap();
+            if let Some(pbkdf2) = Pbkdf2::from_algorithm_identifier(
+                crypto_registry_instance,
+                &rasn::der::encode(&parameters.key_derivation_func).unwrap(),
+            ) {
+                if let Some(mac) =
+                    crypto_registry_instance
+                        .macs()
+                        .by_oid(&tyst_encdec::oid::as_string(
+                            &parameters.message_auth_scheme.algorithm,
+                        ))
+                {
+                    return Some(Self::new(mac, pbkdf2));
+                } else {
+                    log::debug!(
+                        "PBMAC1 parameters specify an unknown/unsupported MAC OID: {:?}",
+                        parameters.message_auth_scheme.algorithm.to_vec()
+                    );
+                }
+            } else {
+                log::debug!("This implementation of PBMAC1 requires PBKDF2.");
+            }
+        } else {
+            log::debug!("PBMAC1 parameters are required.");
+        }
+        None
+    }
+
     /// Get human readable implementation identifier.
     pub fn get_algorithm_name(&self) -> String {
         "PBMAC1".to_string()
@@ -97,57 +142,15 @@ mod tests {
     impl CryptoRegistry for DummyCryptoRegistry {}
     static DUMMY_REGISTRY: LazyLock<DummyCryptoRegistry> = LazyLock::new(|| DummyCryptoRegistry {});
 
-    // Generated test vectors
     const TEST_VECTORS: &[(&str, &str, &str, &str, usize, &str)] = &[
-        // PRF: HMAC-SHA3-256
-        (
-            "2.16.840.1.101.3.4.2.14",
-            "This message will be PBMAC1 protected.",
-            "70617373776f7264",
-            "73616c74",
-            1,
-            "1ee76da47988a6d8bd392ab267f1131d12d25bd4385ede185d7f0a0f4a9bc50b",
-        ),
-        (
-            "2.16.840.1.101.3.4.2.14",
-            "This message will be PBMAC1 protected.",
-            "70617373776f7264",
-            "73616c74",
-            4096,
-            "619046309bab7329db469e1e15caf9fda1de46e2d19ecacc73077016599bbb60",
-        ),
-        (
-            "2.16.840.1.101.3.4.2.14",
-            "This message will be PBMAC1 protected.",
-            "70617373776f726450415353574f524470617373776f7264",
-            "73616c7453414c5473616c7453414c5473616c7453414c5473616c7453414c5473616c74",
-            4096,
-            "349d8c86fe82a7c763ba03d5c2d1ae9c19ddbb64d294c2660f0f9d542f9fbbb0",
-        ),
-        // PRF: HMAC-SHA3-512
+        // Generated with the BC implementation patched with https://github.com/bcgit/bc-java/pull/2070
         (
             "2.16.840.1.101.3.4.2.16",
             "This message will be PBMAC1 protected.",
-            "70617373776f7264",
-            "73616c74",
-            1,
-            "63c75cc9119f5674fbfc7a401511e98babad960c74955c29d27e287c8d18d1d15aa23cd4157801fc78e08f7982c667fcd048ea6e94a43a3737ecd46273541692",
-        ),
-        (
-            "2.16.840.1.101.3.4.2.16",
-            "This message will be PBMAC1 protected.",
-            "70617373776f7264",
-            "73616c74",
-            4096,
-            "3a4c406f77bad946ec51e09f8d808f749981ea32d61d9099a1800658bb45ddadd6c00260003c8dd5399629b63f052f40032707410d36fa1cbf2c5581fd70fc18",
-        ),
-        (
-            "2.16.840.1.101.3.4.2.16",
-            "This message will be PBMAC1 protected.",
-            "70617373776f726450415353574f524470617373776f7264",
-            "73616c7453414c5473616c7453414c5473616c7453414c5473616c7453414c5473616c74",
-            4096,
-            "4f3b091522f8068d6e90ed35d9c473f7bbcb6c6ef29b54afb5b11f04d986cab8b948e8332e81ac16005ccd318dbac17ffbe04a99f40390f2a31a942ade3aa5b7",
+            "666f6f626172313233",
+            "612073616c742073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c742d73616c74",
+            1024,
+            "3a504246da1a069fecfd5811688fcc9f1d2b9017bf56821244eb5231712e7629678d614e68e6ef4d14954bbeda0a04ed907257363c501b48bca7580877c1313e",
         ),
     ];
 
@@ -155,12 +158,13 @@ mod tests {
     fn test_pbmac1() {
         for (prf_oid, message, password_hex, salt_hex, iterations, expected_hex) in TEST_VECTORS {
             let password = tyst_encdec::hex::decode(&password_hex).unwrap();
+            let message = message.as_bytes();
             let salt = tyst_encdec::hex::decode(&salt_hex).unwrap();
             let prf = get_hmac(prf_oid);
             let mac = get_hmac(prf_oid);
-            let dk_len = mac.get_mac_size_bits() >> 3;
+            let dk_len = salt.len();
             let actual_hex = Pbmac1::new(mac, Pbkdf2::new(&salt, *iterations, dk_len, prf))
-                .pbmac(&password, message.as_bytes())
+                .pbmac(&password, &message)
                 .to_hex();
             assert_eq!(&actual_hex, expected_hex);
         }
