@@ -27,6 +27,16 @@ pub struct PolyVecL {
     params: Arc<MldsaParams>,
     poly_vec: Vec<Poly>,
 }
+
+impl std::fmt::Display for PolyVecL {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (i, poly) in self.poly_vec.iter().enumerate() {
+            writeln!(f, "{i}: {poly}")?;
+        }
+        Ok(())
+    }
+}
+
 impl PolyVecL {
     /// Return a new instance.
     pub fn new(params: &Arc<MldsaParams>) -> Self {
