@@ -34,7 +34,7 @@ fn test_bc_generated_signature() {
 fn test_key_generation() {
     crate::test::common::init_logger();
     let acvp_tests = acvp::get_acvp_test_data(
-        "https://github.com/usnistgov/ACVP-Server/raw/refs/tags/v1.1.0.39/gen-val/json-files/ML-DSA-keyGen-FIPS204/internalProjection.json"
+        "https://github.com/usnistgov/ACVP-Server/raw/refs/tags/v1.1.0.37/gen-val/json-files/ML-DSA-keyGen-FIPS204/internalProjection.json"
     )
     .unwrap();
     let mut test_counter = 0;
@@ -83,7 +83,7 @@ fn test_key_generation() {
 fn test_signature_generation() {
     crate::test::common::init_logger();
     let acvp_tests = acvp::get_acvp_test_data(
-        "https://github.com/usnistgov/ACVP-Server/raw/refs/tags/v1.1.0.39/gen-val/json-files/ML-DSA-sigGen-FIPS204/internalProjection.json"
+        "https://github.com/usnistgov/ACVP-Server/raw/refs/tags/v1.1.0.37/gen-val/json-files/ML-DSA-sigGen-FIPS204/internalProjection.json"
     )
     .unwrap();
     let mut test_counter = 0;
@@ -148,7 +148,7 @@ fn test_signature_generation() {
 fn test_signature_verification() {
     crate::test::common::init_logger();
     let acvp_tests = acvp::get_acvp_test_data(
-        "https://github.com/usnistgov/ACVP-Server/raw/refs/tags/v1.1.0.39/gen-val/json-files/ML-DSA-sigVer-FIPS204/internalProjection.json"
+        "https://github.com/usnistgov/ACVP-Server/raw/refs/tags/v1.1.0.37/gen-val/json-files/ML-DSA-sigVer-FIPS204/internalProjection.json"
     )
     .unwrap();
     let mut test_counter = 0;
