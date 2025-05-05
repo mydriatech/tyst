@@ -37,6 +37,15 @@ pub struct Poly {
     params: Arc<MldsaParams>,
 }
 
+impl std::fmt::Display for Poly {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for coeff in &self.coeffs {
+            write!(f, "{coeff}, ")?;
+        }
+        Ok(())
+    }
+}
+
 impl Poly {
     const POLY_UNIFORM_N_LEN: usize = (768 + ShakeSymmetric::STREAM_128_BLOCK_BYTES - 1);
 

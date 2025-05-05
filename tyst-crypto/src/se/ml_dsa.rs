@@ -194,7 +194,7 @@ impl SignatureEngine for MldsaEngine {
                 self.init_and_sign_internal(
                     mldsa_private_key.get_tr(),
                     false,
-                    None,
+                    Some(&[]),
                     data,
                     mldsa_private_key.get_rho(),
                     mldsa_private_key.get_k(),
@@ -218,7 +218,7 @@ impl SignatureEngine for MldsaEngine {
                     mldsa_public_key.get_rho(),
                     mldsa_public_key.get_t1_packed(),
                     false,
-                    None,
+                    Some(&[]),
                 );
                 self.verify_internal_msg(
                     signature,
@@ -406,6 +406,7 @@ impl MldsaEngine {
             shake256_digest.update(ctx);
         }
         shake256_digest.update(msg);
+
         self.generate_signature(shake256_digest, rho, key, t0_enc, s1_enc, s2_enc, rnd)
     }
 
@@ -444,6 +445,9 @@ impl MldsaEngine {
         // 𝜇 ← H(BytesToBits(𝑡𝑟)||𝑀 , 64)
         let mut mu = [0u8; MldsaParams::CRH_BYTES];
         shake256_digest.finalize(&mut mu);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("mu: {}", tyst_encdec::hex::encode(&mu));
+        }
         // Decode secret key parts
         let mut t0 = PolyVecK::new(&self.params);
         let mut s1 = PolyVecL::new(&self.params);
@@ -475,9 +479,16 @@ impl MldsaEngine {
         key_mu[o..o + MldsaParams::RND_BYTES].copy_from_slice(&rnd[0..MldsaParams::RND_BYTES]);
         o += MldsaParams::RND_BYTES;
         key_mu[o..o + MldsaParams::CRH_BYTES].copy_from_slice(&mu[0..MldsaParams::CRH_BYTES]);
+        //log::debug!("key_mu: {}", tyst_encdec::hex::encode(&key_mu));
         shake256_digest.update(&key_mu);
         let mut rho_double_prime = [0u8; MldsaParams::CRH_BYTES];
-        shake256_digest.finalize(&mut rho_double_prime[0..MldsaParams::CRH_BYTES]);
+        shake256_digest.finalize(&mut rho_double_prime);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!(
+                "rho_double_prime: {}",
+                tyst_encdec::hex::encode(&rho_double_prime)
+            );
+        }
         // initialize counter 𝜅. κ: kappa
         let mut kappa = 0;
         // (𝐳, 𝐡) ← ⊥
@@ -614,12 +625,18 @@ impl MldsaEngine {
     */
 
     /// NIST FIPS 204 Algorithm 8 (start)
+    ///
+    /// `ctx`: context string 𝑐𝑡𝑥 (a byte string of 255 or fewer bytes).
     pub fn init_verify(&mut self, rho: &[u8], t1_enc: &[u8], pre_hash: bool, ctx: Option<&[u8]>) {
         // 𝑡𝑟 ← H(𝑝𝑘, 64)
         self.digest.update(rho);
         self.digest.update(t1_enc);
         let mut tr = [0u8; MldsaParams::TR_BYTES];
         self.digest.finalize(&mut tr);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("tr: {}", tyst_encdec::hex::encode(&tr));
+            log::trace!("ctx: {:?}", ctx);
+        }
         // self.digest ← (H(BytesToBits(𝑡𝑟)||𝑀 ′ , 64))
         self.digest.update(&tr);
         if let Some(ctx) = ctx {
@@ -644,26 +661,46 @@ impl MldsaEngine {
         t1_encoded: &[u8],
     ) -> bool {
         if sig.len() != self.params.crypto_bytes {
+            if log::log_enabled!(log::Level::Debug) {
+                log::debug!("Wrong signature length.")
+            }
             return false;
         }
         // Decode public key
         let mut t1 = PolyVecK::new(&self.params);
         packing::unpack_public_key_t1(&self.params, &mut t1, t1_encoded);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("t1: {t1}");
+        }
         // Decode signer’s commitment hash 𝑐,̃ response 𝐳, and hint 𝐡
         let mut z = PolyVecL::new(&self.params);
         let mut h = PolyVecK::new(&self.params);
         if !packing::unpack_signature(&self.params, &mut z, &mut h, sig) {
+            if log::log_enabled!(log::Level::Debug) {
+                log::debug!("Failed to unpack signature.")
+            }
             return false;
+        }
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("z: {z}");
+            log::trace!("h: {h}");
         }
         // Use only first c_tilde bytes of signature.
         let c_tilde = &sig[0..self.params.c_tilde];
         if z.check_norm(i32::try_from(self.params.gamma1 - self.params.beta).unwrap()) {
+            if log::log_enabled!(log::Level::Debug) {
+                log::debug!("z.check_norm failed.")
+            }
             return false;
         }
         // 𝜇 ← (H(BytesToBits(𝑡𝑟)||𝑀 ′ , 64))
         let mut mu = [0u8; MldsaParams::CRH_BYTES];
         self.digest.update(msg);
         self.digest.finalize(&mut mu);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("msg: {}", tyst_encdec::hex::encode(msg));
+            log::trace!("mu: {}", tyst_encdec::hex::encode(&mu));
+        }
         // Matrix-vector multiplication; compute 𝐰Approx = 𝐀𝐳 − 𝑐𝐭1 ⋅ 2𝑑
         let mut c_hat = Poly::new(&self.params);
         c_hat.challenge(c_tilde);
@@ -686,11 +723,21 @@ impl MldsaEngine {
         w1.use_hint_self(&h);
         // 𝑐 ′̃ ← H(𝜇||w1Encode(𝐰′1 ), 𝜆/4)
         let buf = w1.pack_w1();
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("w1.pack_w1: {}", tyst_encdec::hex::encode(&buf));
+        }
         let mut shake256_digest = Self::get_shake256_digest();
         shake256_digest.update(&mu);
         shake256_digest.update(&buf[0..self.params.k * self.params.poly_w1_packed_bytes]);
         let mut c_tilde_prime = vec![0u8; self.params.c_tilde];
         shake256_digest.finalize(&mut c_tilde_prime);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("c_tilde: {}", tyst_encdec::hex::encode(c_tilde));
+            log::trace!(
+                "c_tilde_prime: {}",
+                tyst_encdec::hex::encode(&c_tilde_prime)
+            );
+        }
         crate::util::external_constant_time_equals(c_tilde, &c_tilde_prime)
     }
 }
