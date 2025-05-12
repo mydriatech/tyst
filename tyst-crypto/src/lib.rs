@@ -31,9 +31,11 @@ mod mac {
 }
 pub mod misc {
     //! Miscellaneous cryptographic primitive implementations.
+    mod binary_digest_tree;
     mod pbkdf2;
     mod pbmac1;
 
+    pub use self::binary_digest_tree::*;
     pub use self::pbkdf2::Pbkdf2;
     pub use self::pbmac1::Pbmac1;
 }
