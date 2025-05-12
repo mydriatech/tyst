@@ -32,14 +32,26 @@ pub struct ShakeDigestFactory {
     provided: Vec<AlgorithmMetaData>,
 }
 
+impl ShakeDigestFactory {
+    // https://csrc.nist.gov/projects/computer-security-objects-register/algorithm-registration
+    /// `2.16.840.1.101.3.4.2.11`
+    ///
+    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) shake128(11)
+    const OID_SHAKE128: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 11];
+    /// `2.16.840.1.101.3.4.2.12`
+    ///
+    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) shake256(12)
+    const OID_SHAKE256: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 12];
+}
+
 impl Default for ShakeDigestFactory {
     fn default() -> Self {
         Self {
             provided: vec![
                 AlgorithmMetaData::new("SHAKE128", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.11"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHAKE128)),
                 AlgorithmMetaData::new("SHAKE256", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.12"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHAKE256)),
             ],
         }
     }
@@ -136,6 +148,14 @@ impl Digest for ShakeDigest {
 
     fn get_algorithm_name(&self) -> String {
         ShakeDigest::get_algorithm_name(self)
+    }
+
+    fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
+        Some(match self.get_digest_size_bits() {
+            128 => ShakeDigestFactory::OID_SHAKE128.to_vec(),
+            256 => ShakeDigestFactory::OID_SHAKE256.to_vec(),
+            _ => panic!("not implemented"),
+        })
     }
 
     fn reset(&mut self) {
