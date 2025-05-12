@@ -62,12 +62,12 @@ impl BinaryDigestTreeProof {
         }
     }
 
-    /// The used digest algorithm
+    /// The used digest algorithm.
     pub fn get_digest_algorithm_oid(&self) -> &[u32] {
         &self.digest_algorithm_oid
     }
 
-    /// Encoded proof
+    /// Encoded proof.
     pub fn get_encoded_proof(&self) -> &[u8] {
         &self.encoded_proof
     }
