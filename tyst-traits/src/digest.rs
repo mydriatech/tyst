@@ -41,6 +41,12 @@ pub trait Digest: Send {
     /// Return human readable identifier of the crypto algorithm.
     fn get_algorithm_name(&self) -> String;
 
+    /// Return digest algorithm Object Identifier of the crypto algorithm if
+    /// such OID is defined.
+    fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
+        None
+    }
+
     /// Convinience method for ingesting the provided data and returning the
     /// output state (hash) in a single invocation.
     fn hash(&mut self, data: &[u8]) -> Vec<u8> {

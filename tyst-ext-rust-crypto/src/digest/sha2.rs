@@ -31,26 +31,49 @@ pub struct Sha2DigestFactory {
     provided: Vec<AlgorithmMetaData>,
 }
 
+impl Sha2DigestFactory {
+    /// `2.16.840.1.101.3.4.2.1`
+    ///
+    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha256(1)
+    const OID_SHA_256: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 1];
+    /// `2.16.840.1.101.3.4.2.2`
+    ///
+    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha384(2)
+    const OID_SHA_384: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 2];
+    /// `2.16.840.1.101.3.4.2.3`
+    ///
+    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha512(3)
+    const OID_SHA_512: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 3];
+    /// `2.16.840.1.101.3.4.2.4`
+    ///
+    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha224(4)
+    const OID_SHA_224: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 4];
+    /// `2.16.840.1.101.3.4.2.5`
+    ///
+    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha512-224(5)
+    const OID_SHA_512_224: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 5];
+    /// `2.16.840.1.101.3.4.2.6`
+    ///
+    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha512-256(6)
+    const OID_SHA_512_256: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 6];
+}
+
 impl Default for Sha2DigestFactory {
     fn default() -> Self {
         Self {
-            // nistAlgorithms OBJECT IDENTIFIER ::= { joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) }
-            // hashAlgs OBJECT IDENTIFIER ::= { nistAlgorithms 2 }
-            // id-sha256 OBJECT IDENTIFIER ::= { hashAlgs 1 }
-            // 2.16.840.1.101.3.4.2.1
             provided: vec![
-                AlgorithmMetaData::new("SHA-224", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.4"),
                 AlgorithmMetaData::new("SHA-256", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.1"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA_256)),
                 AlgorithmMetaData::new("SHA-384", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.2"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA_384)),
                 AlgorithmMetaData::new("SHA-512", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.3"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA_512)),
+                AlgorithmMetaData::new("SHA-224", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA_224)),
                 AlgorithmMetaData::new("SHA-512-224", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.5"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA_512_224)),
                 AlgorithmMetaData::new("SHA-512-256", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.6"),
+                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA_512_256)),
             ],
         }
     }
@@ -173,6 +196,17 @@ impl Digest for Sha2Digest {
             Self::Sha512_224 { hasher: _ } => "SHA-512-224".to_string(),
             Self::Sha512_256 { hasher: _ } => "SHA-512-256".to_string(),
         }
+    }
+
+    fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
+        Some(match self {
+            Self::Sha224 { hasher: _ } => Sha2DigestFactory::OID_SHA_224.to_vec(),
+            Self::Sha256 { hasher: _ } => Sha2DigestFactory::OID_SHA_256.to_vec(),
+            Self::Sha384 { hasher: _ } => Sha2DigestFactory::OID_SHA_384.to_vec(),
+            Self::Sha512 { hasher: _ } => Sha2DigestFactory::OID_SHA_512.to_vec(),
+            Self::Sha512_224 { hasher: _ } => Sha2DigestFactory::OID_SHA_512_224.to_vec(),
+            Self::Sha512_256 { hasher: _ } => Sha2DigestFactory::OID_SHA_512_256.to_vec(),
+        })
     }
 
     fn reset(&mut self) {
