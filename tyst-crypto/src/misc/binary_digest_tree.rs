@@ -71,6 +71,11 @@ impl BinaryDigestTreeProof {
     pub fn get_encoded_proof(&self) -> &[u8] {
         &self.encoded_proof
     }
+
+    /// Get root hash.
+    pub fn get_root_hash(&self) -> &[u8] {
+        &self.encoded_proof[0..self.digest_size_bytes]
+    }
 }
 
 /// Simple Merkle Tree inspired binary digest tree structure with dynamic hash
