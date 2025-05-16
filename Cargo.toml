@@ -6,6 +6,7 @@ resolver = "2"
 members = [
     "tyst-traits",
     "tyst-encdec",
+    "tyst-oids",
     "tyst-core",
     "tyst-crypto",
     "tyst-api-rest",

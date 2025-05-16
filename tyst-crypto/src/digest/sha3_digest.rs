@@ -19,37 +19,17 @@
 //!
 //! Based on the Keccak message digest algorithm.
 
+use super::keccak_digest::KeccakDigest;
+use tyst_oids as oids;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
 use tyst_traits::CryptoRegistry;
 
-use super::keccak_digest::KeccakDigest;
-
 /// Factory for [Sha3Digest].
 pub struct Sha3DigestFactory {
     provided: Vec<AlgorithmMetaData>,
-}
-
-impl Sha3DigestFactory {
-    // https://csrc.nist.gov/projects/computer-security-objects-register/algorithm-registration
-    /// `2.16.840.1.101.3.4.2.7`
-    ///
-    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha3-224(7)
-    const OID_SHA3_224: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 7];
-    /// `2.16.840.1.101.3.4.2.8`
-    ///
-    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha3-256(8)
-    const OID_SHA3_256: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 8];
-    /// `2.16.840.1.101.3.4.2.9`
-    ///
-    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha3-384(9)
-    const OID_SHA3_384: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 9];
-    /// `2.16.840.1.101.3.4.2.10`
-    ///
-    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) sha3-512(10)
-    const OID_SHA3_512: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 10];
 }
 
 impl Default for Sha3DigestFactory {
@@ -57,13 +37,13 @@ impl Default for Sha3DigestFactory {
         Self {
             provided: vec![
                 AlgorithmMetaData::new("SHA3-224", env!("CARGO_PKG_NAME"))
-                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA3_224)),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_224)),
                 AlgorithmMetaData::new("SHA3-256", env!("CARGO_PKG_NAME"))
-                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA3_256)),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_256)),
                 AlgorithmMetaData::new("SHA3-384", env!("CARGO_PKG_NAME"))
-                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA3_384)),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_384)),
                 AlgorithmMetaData::new("SHA3-512", env!("CARGO_PKG_NAME"))
-                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHA3_512)),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_512)),
             ],
         }
     }
@@ -123,10 +103,10 @@ impl Digest for Sha3Digest {
 
     fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
         Some(match self.get_digest_size_bits() {
-            224 => Sha3DigestFactory::OID_SHA3_224.to_vec(),
-            256 => Sha3DigestFactory::OID_SHA3_256.to_vec(),
-            384 => Sha3DigestFactory::OID_SHA3_384.to_vec(),
-            512 => Sha3DigestFactory::OID_SHA3_512.to_vec(),
+            224 => oids::digest::SHA3_224.to_vec(),
+            256 => oids::digest::SHA3_256.to_vec(),
+            384 => oids::digest::SHA3_384.to_vec(),
+            512 => oids::digest::SHA3_512.to_vec(),
             _ => panic!("not implemented"),
         })
     }

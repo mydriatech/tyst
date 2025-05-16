@@ -55,6 +55,7 @@ use traits::se::SignatureEngineParams;
 use traits::CryptoBundle;
 use traits::CryptoRegistry;
 pub use tyst_encdec as encdec;
+pub use tyst_oids as oids;
 pub use tyst_traits as traits;
 
 #[doc(hidden)]

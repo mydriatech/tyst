@@ -22,6 +22,7 @@ mod asn1_rsa;
 
 use self::asn1_rsa::RsassaPssParams;
 use std::error::Error;
+use tyst_oids as oids;
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -70,23 +71,20 @@ impl Default for RsaSignatureEngineFactory {
             provided: vec![
                 // A descent selection of legacy algorithms?
                 AlgorithmMetaData::new("RSASSA-PKCS1-v1_5-SHA-256", env!("CARGO_PKG_NAME"))
-                    // iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) sha256WithRSAEncryption(11)
-                    .set_oid("1.2.840.113549.1.1.11"),
+                    .set_oid(&tyst_encdec::oid::as_string(
+                        oids::se::RSASSA_PKCS1_V1_5_SHA_256,
+                    )),
                 // Oked: CAB forum, CNSA 1.0. if length>=3072.
                 AlgorithmMetaData::new("RSASSA-PKCS1-v1_5-SHA-384", env!("CARGO_PKG_NAME"))
-                    // iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) sha384WithRSAEncryption(12)
-                    .set_oid("1.2.840.113549.1.1.12"),
+                    .set_oid(&tyst_encdec::oid::as_string(
+                        oids::se::RSASSA_PKCS1_V1_5_SHA_384,
+                    )),
                 AlgorithmMetaData::new("RSASSA-PKCS1-v1_5-SHA-512", env!("CARGO_PKG_NAME"))
-                    // iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) sha512WithRSAEncryption(13)
-                    .set_oid("1.2.840.113549.1.1.13"),
-                // 1.2.840.113549.1.1.10
-                AlgorithmMetaData::new(
-                    //"RSASSA-PSS-with-SHA-384-MGF1-with-SHA-384",
-                    "RSASSA-PSS",
-                    env!("CARGO_PKG_NAME"),
-                )
-                // iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) rsassa-pss(10)
-                .set_oid("1.2.840.113549.1.1.10"),
+                    .set_oid(&tyst_encdec::oid::as_string(
+                        oids::se::RSASSA_PKCS1_V1_5_SHA_512,
+                    )),
+                AlgorithmMetaData::new("RSASSA-PSS", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(oids::se::RSASSA_PSS)),
             ],
         }
     }
@@ -234,7 +232,7 @@ impl SignatureEngine for RsaSignatureEngine {
                 // https://datatracker.ietf.org/doc/html/rfc8017#appendix-A.2.2
                 rasn_pkix::AlgorithmIdentifier {
                     algorithm: rasn::types::ObjectIdentifier::from(
-                        rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 11]).unwrap(),
+                        rasn::types::Oid::new(oids::se::RSASSA_PKCS1_V1_5_SHA_256).unwrap(),
                     ),
                     parameters: None,
                 }
@@ -243,7 +241,7 @@ impl SignatureEngine for RsaSignatureEngine {
                 // https://datatracker.ietf.org/doc/html/rfc8017#appendix-A.2.2
                 rasn_pkix::AlgorithmIdentifier {
                     algorithm: rasn::types::ObjectIdentifier::from(
-                        rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 12]).unwrap(),
+                        rasn::types::Oid::new(oids::se::RSASSA_PKCS1_V1_5_SHA_384).unwrap(),
                     ),
                     parameters: None,
                 }
@@ -252,7 +250,7 @@ impl SignatureEngine for RsaSignatureEngine {
                 // https://datatracker.ietf.org/doc/html/rfc8017#appendix-A.2.2
                 rasn_pkix::AlgorithmIdentifier {
                     algorithm: rasn::types::ObjectIdentifier::from(
-                        rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 13]).unwrap(),
+                        rasn::types::Oid::new(oids::se::RSASSA_PKCS1_V1_5_SHA_512).unwrap(),
                     ),
                     parameters: None,
                 }
@@ -264,7 +262,7 @@ impl SignatureEngine for RsaSignatureEngine {
                     (
                         rasn_pkix::AlgorithmIdentifier {
                             algorithm: rasn::types::ObjectIdentifier::from(
-                                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 2, 3]).unwrap(),
+                                rasn::types::Oid::new(oids::digest::SHA_512).unwrap(),
                             ),
                             parameters: None,
                         },
@@ -275,7 +273,7 @@ impl SignatureEngine for RsaSignatureEngine {
                     (
                         rasn_pkix::AlgorithmIdentifier {
                             algorithm: rasn::types::ObjectIdentifier::from(
-                                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 2, 2]).unwrap(),
+                                rasn::types::Oid::new(oids::digest::SHA_384).unwrap(),
                             ),
                             parameters: None,
                         },
@@ -285,9 +283,8 @@ impl SignatureEngine for RsaSignatureEngine {
                 let rsassa_pss_params = RsassaPssParams {
                     hash_algorithm: hash_algorithm.clone(),
                     mask_gen_algorithm: rasn_pkix::AlgorithmIdentifier {
-                        // id_mgf1 1.2.840.113549.
                         algorithm: rasn::types::ObjectIdentifier::from(
-                            rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 8]).unwrap(),
+                            rasn::types::Oid::new(oids::digest::MGF1).unwrap(),
                         ),
                         parameters: Some(rasn::prelude::Any::new(
                             rasn::der::encode(&hash_algorithm).unwrap(),
@@ -298,7 +295,7 @@ impl SignatureEngine for RsaSignatureEngine {
                 };
                 rasn_pkix::AlgorithmIdentifier {
                     algorithm: rasn::types::ObjectIdentifier::from(
-                        rasn::types::Oid::new(&[1, 2, 840, 113549, 1, 1, 10]).unwrap(),
+                        rasn::types::Oid::new(oids::se::RSASSA_PSS).unwrap(),
                     ),
                     parameters: Some(rasn::prelude::Any::new(
                         rasn::der::encode(&rsassa_pss_params).unwrap(),

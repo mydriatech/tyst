@@ -19,29 +19,17 @@
 //! algorithms.
 //!
 //! Based on the Keccak message digest algorithm.
+use super::keccak_digest::KeccakDigest;
+use tyst_oids as oids;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
 use tyst_traits::CryptoRegistry;
 
-use super::keccak_digest::KeccakDigest;
-
 /// Factory for [ShakeDigest].
 pub struct ShakeDigestFactory {
     provided: Vec<AlgorithmMetaData>,
-}
-
-impl ShakeDigestFactory {
-    // https://csrc.nist.gov/projects/computer-security-objects-register/algorithm-registration
-    /// `2.16.840.1.101.3.4.2.11`
-    ///
-    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) shake128(11)
-    const OID_SHAKE128: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 11];
-    /// `2.16.840.1.101.3.4.2.12`
-    ///
-    // joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) shake256(12)
-    const OID_SHAKE256: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 2, 12];
 }
 
 impl Default for ShakeDigestFactory {
@@ -49,9 +37,9 @@ impl Default for ShakeDigestFactory {
         Self {
             provided: vec![
                 AlgorithmMetaData::new("SHAKE128", env!("CARGO_PKG_NAME"))
-                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHAKE128)),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHAKE128)),
                 AlgorithmMetaData::new("SHAKE256", env!("CARGO_PKG_NAME"))
-                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_SHAKE256)),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHAKE256)),
             ],
         }
     }
@@ -152,8 +140,8 @@ impl Digest for ShakeDigest {
 
     fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
         Some(match self.get_digest_size_bits() {
-            128 => ShakeDigestFactory::OID_SHAKE128.to_vec(),
-            256 => ShakeDigestFactory::OID_SHAKE256.to_vec(),
+            128 => oids::digest::SHAKE128.to_vec(),
+            256 => oids::digest::SHAKE256.to_vec(),
             _ => panic!("not implemented"),
         })
     }
