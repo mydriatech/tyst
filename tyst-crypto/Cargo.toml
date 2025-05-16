@@ -10,6 +10,7 @@ description = "TYST Crypto Algorithm Implementations"
 [dependencies]
 
 tyst_traits = { path = "../tyst-traits" }
+tyst_oids = { path = "../tyst-oids" }
 tyst_encdec = { path = "../tyst-encdec" }
 
 # Logging and tracing

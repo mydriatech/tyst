@@ -17,6 +17,7 @@ all-features = true
 [dependencies]
 
 tyst_traits = { path = "../tyst-traits" }
+tyst_oids = { path = "../tyst-oids" }
 tyst_crypto = { path = "../tyst-crypto", optional = true }
 tyst_ext_rust_crypto = { path = "../tyst-ext-rust-crypto", optional = true }
 tyst_encdec = { path = "../tyst-encdec" }

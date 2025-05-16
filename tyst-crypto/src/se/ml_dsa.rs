@@ -52,6 +52,7 @@ use self::poly_vec_l::PolyVecL;
 use self::poly_vec_matrix::PolyVecMatrix;
 use crate::digest::shake_digest::ShakeDigest;
 use std::sync::Arc;
+use tyst_oids as oids;
 use tyst_traits::digest::Digest;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
@@ -67,6 +68,7 @@ pub struct MldsaSignatureEngineFactory {
     provided: Vec<AlgorithmMetaData>,
 }
 
+/*
 impl MldsaSignatureEngineFactory {
     /// `2.16.840.1.101.3.4.3.17`
     ///
@@ -81,21 +83,22 @@ impl MldsaSignatureEngineFactory {
     /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3) ml-dsa-87(19)
     const OID_ML_DSA_87: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 3, 19];
 
+}*/
+
+impl Default for MldsaSignatureEngineFactory {
+    // TODO: Add support for the pre-hash variants
     //  id-hash-ml-dsa-44-with-sha512(32)
     //  id-hash-ml-dsa-65-with-sha512(33)
     //  id-hash-ml-dsa-87-with-sha512(34)
-}
-
-impl Default for MldsaSignatureEngineFactory {
     fn default() -> Self {
         Self {
             provided: vec![
                 AlgorithmMetaData::new("ML-DSA-44", env!("CARGO_PKG_NAME"))
-                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_ML_DSA_44)),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::se::ML_DSA_44)),
                 AlgorithmMetaData::new("ML-DSA-65", env!("CARGO_PKG_NAME"))
-                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_ML_DSA_65)),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::se::ML_DSA_65)),
                 AlgorithmMetaData::new("ML-DSA-87", env!("CARGO_PKG_NAME"))
-                    .set_oid(&tyst_encdec::oid::as_string(Self::OID_ML_DSA_87)),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::se::ML_DSA_87)),
             ],
         }
     }
@@ -155,13 +158,13 @@ impl SignatureEngine for MldsaEngine {
     fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
         let algorithm = match self.algorithm_name.as_str() {
             "ML-DSA-44" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(MldsaSignatureEngineFactory::OID_ML_DSA_44).unwrap(),
+                rasn::types::Oid::new(oids::se::ML_DSA_44).unwrap(),
             ),
             "ML-DSA-65" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(MldsaSignatureEngineFactory::OID_ML_DSA_65).unwrap(),
+                rasn::types::Oid::new(oids::se::ML_DSA_65).unwrap(),
             ),
             "ML-DSA-87" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(MldsaSignatureEngineFactory::OID_ML_DSA_87).unwrap(),
+                rasn::types::Oid::new(oids::se::ML_DSA_87).unwrap(),
             ),
             bad_alg => {
                 panic!("Unsupported signature algorithm '{bad_alg}'.");

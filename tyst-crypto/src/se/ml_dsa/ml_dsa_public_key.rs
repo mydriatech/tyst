@@ -18,8 +18,8 @@
 //! ML-DSA public key.
 
 use super::MldsaParams;
-use super::MldsaSignatureEngineFactory;
 use std::error::Error;
+use tyst_oids as oids;
 use tyst_traits::se::PublicKey;
 
 /// ML-DSA public key.
@@ -39,7 +39,7 @@ impl TryFrom<&dyn PublicKey> for MldsaPublicKey {
         let encoded = spki.subject_public_key.as_raw_slice();
         // Length check using NIST FIPS 204 Table 2
         match spki.algorithm.algorithm.to_vec().as_slice() {
-            MldsaSignatureEngineFactory::OID_ML_DSA_44 => {
+            oids::se::ML_DSA_44 => {
                 if encoded.len() != 1312 {
                     return Err(format!(
                         "Public key length for ML-DSA-44 should be {}, not {}.",
@@ -48,7 +48,7 @@ impl TryFrom<&dyn PublicKey> for MldsaPublicKey {
                     ));
                 }
             }
-            MldsaSignatureEngineFactory::OID_ML_DSA_65 => {
+            oids::se::ML_DSA_65 => {
                 if encoded.len() != 1952 {
                     return Err(format!(
                         "Public key length for ML-DSA-44 should be {}, not {}.",
@@ -57,7 +57,7 @@ impl TryFrom<&dyn PublicKey> for MldsaPublicKey {
                     ));
                 }
             }
-            MldsaSignatureEngineFactory::OID_ML_DSA_87 => {
+            oids::se::ML_DSA_87 => {
                 if encoded.len() != 2592 {
                     return Err(format!(
                         "Public key length for ML-DSA-44 should be {}, not {}.",
@@ -76,9 +76,9 @@ impl PublicKey for MldsaPublicKey {
     fn try_as_spki(&self) -> Result<Vec<u8>, Box<dyn Error>> {
         let oid = match self.t1.len() / MldsaParams::POLY_T1_PACKED_BYTES {
             // Match MldsaParams.k
-            4 => MldsaSignatureEngineFactory::OID_ML_DSA_44,
-            6 => MldsaSignatureEngineFactory::OID_ML_DSA_65,
-            8 => MldsaSignatureEngineFactory::OID_ML_DSA_87,
+            4 => oids::se::ML_DSA_44,
+            6 => oids::se::ML_DSA_65,
+            8 => oids::se::ML_DSA_87,
             _ => panic!(),
         };
         rasn::der::encode(&rasn_pkix::SubjectPublicKeyInfo {
