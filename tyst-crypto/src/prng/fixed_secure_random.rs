@@ -17,11 +17,11 @@
 
 //! Mock PRNG implementation for providing deterministic data during testing.
 
+use tyst_traits::CryptoRegistry;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
 use tyst_traits::prng::SecureRandom;
 use tyst_traits::prng::SecureRandomParams;
-use tyst_traits::CryptoRegistry;
 
 pub struct FixedSecureRandomFactory {
     provided: Vec<AlgorithmMetaData>,

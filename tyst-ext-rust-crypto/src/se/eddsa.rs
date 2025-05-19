@@ -23,6 +23,7 @@
 use std::error::Error;
 
 use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -31,7 +32,6 @@ use tyst_traits::se::PrivateKey;
 use tyst_traits::se::PublicKey;
 use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [EddsaSignatureEngine].
 pub struct EddsaSignatureEngineFactory {

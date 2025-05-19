@@ -21,11 +21,11 @@
 //! Based on the Keccak message digest algorithm.
 use super::keccak_digest::KeccakDigest;
 use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [ShakeDigest].
 pub struct ShakeDigestFactory {
@@ -177,7 +177,8 @@ mod tests {
                     .hash(&tyst_encdec::hex::decode(msg).unwrap()),
             );
             assert_eq!(
-                hash_as_hex.len()*4, bit_length*2,
+                hash_as_hex.len() * 4,
+                bit_length * 2,
                 "Failed to generate the correct hash size for bit_length '{bit_length}' and messages '{msg}'."
             );
             assert_eq!(

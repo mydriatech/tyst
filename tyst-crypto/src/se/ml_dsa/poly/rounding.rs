@@ -65,24 +65,12 @@ pub fn use_hint(a: i32, hint: i32, gamma2: i32) -> i32 {
         return a1;
     }
     if gamma2 == ((MldsaParams::Q - 1) / 32) as i32 {
-        if a0 > 0 {
-            (a1 + 1) & 15
-        } else {
-            (a1 - 1) & 15
-        }
+        if a0 > 0 { (a1 + 1) & 15 } else { (a1 - 1) & 15 }
     } else if gamma2 == ((MldsaParams::Q - 1) / 88) as i32 {
         if a0 > 0 {
-            if a1 == 43 {
-                0
-            } else {
-                a1 + 1
-            }
+            if a1 == 43 { 0 } else { a1 + 1 }
         } else {
-            if a1 == 0 {
-                43
-            } else {
-                a1 - 1
-            }
+            if a1 == 0 { 43 } else { a1 - 1 }
         }
     } else {
         panic!("Unsupported gamma2 '{gamma2}'.")

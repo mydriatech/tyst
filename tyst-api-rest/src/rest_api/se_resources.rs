@@ -17,9 +17,14 @@
 
 //! Signature engine REST API resources
 
+use super::AppState;
 use super::rest_api_common::AlgorithmMetaDataItem;
 use super::rest_api_common::ConfinedKeyMaterial;
-use super::AppState;
+use actix_web::Error;
+use actix_web::HttpRequest;
+use actix_web::HttpResponse;
+use actix_web::Responder;
+use actix_web::Result;
 use actix_web::error::ErrorBadRequest;
 use actix_web::get;
 use actix_web::http::StatusCode;
@@ -28,15 +33,11 @@ use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
 use actix_web::web::Query;
-use actix_web::Error;
-use actix_web::HttpRequest;
-use actix_web::HttpResponse;
-use actix_web::Responder;
-use actix_web::Result;
 use serde::{Deserialize, Serialize};
 use serde_with::base64::Base64;
 use serde_with::serde_as;
 use std::sync::Arc;
+use tyst::Tyst;
 use tyst::encdec::hex::ToHex;
 use tyst::traits::common::BasicConfinement;
 use tyst::traits::common::ConfinedObjectAsBytes;
@@ -47,9 +48,8 @@ use tyst::traits::factory::FactoryCriteria;
 use tyst::traits::se::PrivateKey;
 use tyst::traits::se::PublicKey;
 use tyst::traits::se::SignatureEngineParams;
-use tyst::Tyst;
-use utoipa::schema;
 use utoipa::ToSchema;
+use utoipa::schema;
 
 #[serde_as]
 #[derive(ToSchema, Serialize)]

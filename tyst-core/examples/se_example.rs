@@ -17,10 +17,10 @@
 
 //! Example of using Signature Engine REST API
 
+use tyst::Tyst;
 use tyst::encdec::base64::ToBase64;
 use tyst::traits::se::ToPrivateKey;
 use tyst::traits::se::ToPublicKey;
-use tyst::Tyst;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(

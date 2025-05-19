@@ -21,6 +21,7 @@
 use ml_kem::EncodedSizeUser;
 use ml_kem::KemCore;
 use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -31,7 +32,6 @@ use tyst_traits::kem::Kem;
 use tyst_traits::kem::KemCipherText;
 use tyst_traits::kem::KemParams;
 use tyst_traits::kem::KemSharedSecret;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [MlkemKem].
 pub struct MlkemKemFactory {

@@ -22,8 +22,8 @@ use crate::traits::factory::Factory;
 use crate::traits::factory::FactoryCriteria;
 use crate::traits::factory::FactoryRegistry;
 use crossbeam_skiplist::SkipMap;
-use std::sync::atomic::AtomicUsize;
 use std::sync::Arc;
+use std::sync::atomic::AtomicUsize;
 
 /// Generalized registry for crypto algorithm factories of a specific type.
 pub struct FactoryRegistryImpl<F: ?Sized + 'static + Factory> {

@@ -20,7 +20,7 @@
 use crate::AppHealth;
 use actix_web::http::StatusCode;
 use actix_web::web::Data;
-use actix_web::{get, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, get};
 use serde::Serialize;
 use std::sync::Arc;
 use utoipa::ToSchema;

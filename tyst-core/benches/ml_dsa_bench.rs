@@ -17,8 +17,8 @@
 
 //! Benchmark of signature engine (SE) ML-DSA implementation
 
-use bencher::benchmark_group;
 use bencher::Bencher;
+use bencher::benchmark_group;
 use core::hint::black_box;
 use tyst::Tyst;
 

@@ -62,7 +62,7 @@ impl TryFrom<&dyn PrivateKey> for MldsaPrivateKey {
             bad_size => {
                 return Err(format!(
                     "Unknown algorithm for private key size of {bad_size} bytes."
-                ))
+                ));
             }
         };
         Ok(MldsaPrivateKey::new(

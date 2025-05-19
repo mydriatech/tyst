@@ -19,6 +19,7 @@
 //! [RFC 2104](https://datatracker.ietf.org/doc/html/rfc2104).
 
 use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
@@ -26,7 +27,6 @@ use tyst_traits::mac::Mac;
 use tyst_traits::mac::MacKey;
 use tyst_traits::mac::MacParams;
 use tyst_traits::mac::ToMacKey;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [HmacMac].
 pub struct HmacMacFactory {
@@ -290,10 +290,22 @@ mod tests {
 
     const KEY: &'static str = "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b";
     const MESSAGE: &'static str = "4869205468657265";
-    const OUTPUTS: &[(usize,usize,&str)] = &[
-        (256, 136, "ba85192310dffa96e2a3a40e69774351140bb7185e1202cdcc917589f95e16bb"),
-        (384, 104, "68d2dcf7fd4ddd0a2240c8a437305f61fb7334cfb5d0226e1bc27dc10a2e723a20d370b47743130e26ac7e3d532886bd"),
-        (512, 72, "eb3fbd4b2eaab8f5c504bd3a41465aacec15770a7cabac531e482f860b5ec7ba47ccb2c6f2afce8f88d22b6dc61380f23a668fd3888bb80537c0a0b86407689e"),
+    const OUTPUTS: &[(usize, usize, &str)] = &[
+        (
+            256,
+            136,
+            "ba85192310dffa96e2a3a40e69774351140bb7185e1202cdcc917589f95e16bb",
+        ),
+        (
+            384,
+            104,
+            "68d2dcf7fd4ddd0a2240c8a437305f61fb7334cfb5d0226e1bc27dc10a2e723a20d370b47743130e26ac7e3d532886bd",
+        ),
+        (
+            512,
+            72,
+            "eb3fbd4b2eaab8f5c504bd3a41465aacec15770a7cabac531e482f860b5ec7ba47ccb2c6f2afce8f88d22b6dc61380f23a668fd3888bb80537c0a0b86407689e",
+        ),
     ];
 
     pub struct DummyCryptoRegistry {}
