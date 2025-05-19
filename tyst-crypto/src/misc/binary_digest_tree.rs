@@ -244,27 +244,20 @@ impl BinaryDigestTree {
     }
 
     fn hash_leaf(digest: &mut dyn Digest, data: &[u8]) -> Vec<u8> {
-        Self::hash(digest, &[&[0x00u8], data])
+        digest.hash_many(&[&[0x00u8], data])
     }
 
     fn concat_and_hash(digest: &mut dyn Digest, left: &[u8], right: Option<&[u8]>) -> Vec<u8> {
         if let Some(right) = right {
-            Self::hash(digest, &[&[0x01u8], left, right])
+            digest.hash_many(&[&[0x01u8], left, right])
         } else {
-            Self::hash(digest, &[&[0x01u8], left])
+            digest.hash_many(&[&[0x01u8], left])
         }
     }
 
     /// Specal case for useless tree with 0 leafs.
     fn hash_empty(digest: &mut dyn Digest) -> Vec<u8> {
-        Self::hash(digest, &[&[0x01u8]])
-    }
-
-    fn hash(digest: &mut dyn Digest, data: &[&[u8]]) -> Vec<u8> {
-        data.iter().for_each(|data| digest.update(data));
-        let mut out = vec![0u8; digest.get_digest_size_bits() / 8];
-        digest.finalize(&mut out);
-        out
+        digest.hash_many(&[&[0x01u8]])
     }
 }
 
