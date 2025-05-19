@@ -54,13 +54,15 @@ fn test_key_generation() {
                         &pub_key.try_as_raw().unwrap(),
                         &test.get_pk(),
                         "{test_type}/{parameter_set}: Public key does not match the expected for test {}/{tg_id}/{}.",
-                        acvp_tests.get_vs_id(), test.get_tc_id()
+                        acvp_tests.get_vs_id(),
+                        test.get_tc_id()
                     );
                     assert_eq!(
                         &priv_key.try_as_bytes().unwrap(),
                         &test.get_sk(),
                         "{test_type}/{parameter_set}: Private (secret) key does not match the expected for test {}/{tg_id}/{}.",
-                        acvp_tests.get_vs_id(), test.get_tc_id()
+                        acvp_tests.get_vs_id(),
+                        test.get_tc_id()
                     );
                     test_counter += 1;
                 }
@@ -122,11 +124,12 @@ fn test_signature_generation() {
                         )
                         .unwrap();
                     assert_eq!(
-                            &signature,
-                            test.get_signature(),
-                            "{test_type}/{parameter_set}: Generated signature does not match {}/{tg_id}/{}.",
-                            acvp_tests.get_vs_id(), test.get_tc_id()
-                        );
+                        &signature,
+                        test.get_signature(),
+                        "{test_type}/{parameter_set}: Generated signature does not match {}/{tg_id}/{}.",
+                        acvp_tests.get_vs_id(),
+                        test.get_tc_id()
+                    );
                     test_counter += 1;
                 }
             }
@@ -173,7 +176,8 @@ fn test_signature_verification() {
                         actual,
                         test.get_test_passed(),
                         "{test_type}/{parameter_set}: Signature verification produced the wrong result for test {}/{tg_id}/{}.",
-                        acvp_tests.get_vs_id(), test.get_tc_id()
+                        acvp_tests.get_vs_id(),
+                        test.get_tc_id()
                     );
                     test_counter += 1;
                 }

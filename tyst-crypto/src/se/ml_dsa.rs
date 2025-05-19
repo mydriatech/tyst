@@ -53,6 +53,7 @@ use self::poly_vec_matrix::PolyVecMatrix;
 use crate::digest::shake_digest::ShakeDigest;
 use std::sync::Arc;
 use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
@@ -61,7 +62,6 @@ use tyst_traits::se::PrivateKey;
 use tyst_traits::se::PublicKey;
 use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for the [MldsaEngine].
 pub struct MldsaSignatureEngineFactory {
@@ -267,7 +267,9 @@ impl MldsaEngine {
             let pub_key = MldsaPublicKey::new(&MldsaPublicKey::encode(&rho, &t1));
             (pub_key, priv_key)
         } else {
-            panic!("This instance was never instantiated with a PRNG. Key generation is not available.");
+            panic!(
+                "This instance was never instantiated with a PRNG. Key generation is not available."
+            );
         }
     }
 

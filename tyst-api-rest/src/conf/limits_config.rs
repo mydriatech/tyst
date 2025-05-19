@@ -17,8 +17,8 @@
 
 //! Resource limitations detection and config override parsing.
 
-use config::builder::BuilderState;
 use config::ConfigBuilder;
+use config::builder::BuilderState;
 use serde::{Deserialize, Serialize};
 
 use super::AppConfigDefaults;

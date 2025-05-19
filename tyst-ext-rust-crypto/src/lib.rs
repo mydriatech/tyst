@@ -42,6 +42,7 @@ pub mod test {
 }
 
 use std::sync::Arc;
+use tyst_traits::CryptoBundle;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::Factory;
@@ -49,7 +50,6 @@ use tyst_traits::kem::Kem;
 use tyst_traits::kem::KemParams;
 use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
-use tyst_traits::CryptoBundle;
 
 /// [CryptoBundle] that provides externally implemented algorithms.
 #[derive(Default)]

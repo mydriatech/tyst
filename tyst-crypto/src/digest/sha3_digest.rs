@@ -21,11 +21,11 @@
 
 use super::keccak_digest::KeccakDigest;
 use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [Sha3Digest].
 pub struct Sha3DigestFactory {
@@ -198,7 +198,8 @@ mod tests {
                 &Sha3Digest::new(bit_length).hash(&tyst_encdec::hex::decode(msg).unwrap()),
             );
             assert_eq!(
-                hash_as_hex.len()*4, bit_length,
+                hash_as_hex.len() * 4,
+                bit_length,
                 "Failed to generate the correct hash size for bit_length '{bit_length}' and messages '{msg}'."
             );
             assert_eq!(

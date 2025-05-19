@@ -193,7 +193,7 @@ pub fn decode(data: &str) -> Result<Vec<u8>, DecodingError> {
                     return Err(DecodingError::with_msg(&format!(
                         "Unknown garbage in input at position {}: '0x{c:x}'",
                         offset + i
-                    )))
+                    )));
                 }
             };
             match i {
@@ -220,7 +220,7 @@ pub fn decode(data: &str) -> Result<Vec<u8>, DecodingError> {
                 i => {
                     return Err(DecodingError::with_msg(&format!(
                         "This should never happen. Index was '{i}'."
-                    )))
+                    )));
                 }
             }
         }

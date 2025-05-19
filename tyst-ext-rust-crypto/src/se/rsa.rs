@@ -23,6 +23,7 @@ mod asn1_rsa;
 use self::asn1_rsa::RsassaPssParams;
 use std::error::Error;
 use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -31,7 +32,6 @@ use tyst_traits::se::PrivateKey;
 use tyst_traits::se::PublicKey;
 use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [RsaSignatureEngine].
 ///
@@ -118,7 +118,9 @@ impl Factory for RsaSignatureEngineFactory {
                 } else if bits == 128 {
                     3072
                 } else {
-                    log::warn!("Refusing to handle RSSSA ops with modulus smaller than 3072 bits. Capping.");
+                    log::warn!(
+                        "Refusing to handle RSSSA ops with modulus smaller than 3072 bits. Capping."
+                    );
                     3072
                 }
             }

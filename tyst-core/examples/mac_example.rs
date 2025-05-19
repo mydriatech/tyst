@@ -17,8 +17,8 @@
 
 //! Example of using Message Authentication Code (MAC) API
 
-use tyst::encdec::hex::ToHex;
 use tyst::Tyst;
+use tyst::encdec::hex::ToHex;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(

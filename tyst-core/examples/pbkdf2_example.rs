@@ -17,8 +17,8 @@
 
 //! Example of using Password-Based Key Derivation Function 2 (PBKDF2).
 
-use tyst::encdec::hex::ToHex;
 use tyst::Tyst;
+use tyst::encdec::hex::ToHex;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let prf = Tyst::instance().macs().by_name("HMAC-SHA3-512").unwrap();

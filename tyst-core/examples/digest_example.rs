@@ -17,8 +17,8 @@
 
 //! Example of using message digest (hash)
 
-use tyst::encdec::hex::ToHex;
 use tyst::Tyst;
+use tyst::encdec::hex::ToHex;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let algorithm = "SHA3-384";

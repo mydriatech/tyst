@@ -22,11 +22,11 @@ mod hmac_drbd;
 use crate::prng::os_entropy_source::OsEntropySource;
 use hmac_drbd::HmacDrbd;
 use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
 use tyst_traits::prng::SecureRandom;
 use tyst_traits::prng::SecureRandomParams;
-use tyst_traits::CryptoRegistry;
 
 /*
 From https://pages.nist.gov/ACVP/draft-vassilev-acvp-drbg.html#supported_values
@@ -106,7 +106,9 @@ impl Factory for Sp80090aSecureRandomFactory {
         params: Self::Parameters,
     ) -> Box<Self::Type> {
         if params.seed().is_some() {
-            log::info!("A seed was provided to the NIST SP 800-90A DRBG, but this was ignored. Use nonce instead.");
+            log::info!(
+                "A seed was provided to the NIST SP 800-90A DRBG, but this was ignored. Use nonce instead."
+            );
         }
         let nonce = params.nonce();
         match algorithm_name {
