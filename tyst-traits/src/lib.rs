@@ -115,11 +115,41 @@ pub trait CryptoRegistry: Sync + Send {
 
     /// Fill the `target` slice with random from `dyn SecureRandom` instance
     /// using the requested `algorithm_name`.
+    ///
     /// If no `algorithm_name` is provided, a cryptographically strong one will
     /// be choosen.
+    ///
+    /// Example:
+    ///
+    /// ```text
+    /// let random_u64 = {
+    ///     let mut buf = [0u8; size_of::<u64>()];
+    ///     crypto_registry_instance.prng_fill_with_random(None, &mut buf);
+    ///     u64::from_ne_bytes(buf)
+    /// };
+    /// ```
     #[allow(unused_variables)]
     fn prng_fill_with_random(&self, algorithm_name: Option<&str>, target: &mut [u8]) {
-        panic!("No Psuedo-Random Number Generator instance is provided by this implementation.")
+        panic!("No implementation by any enabled CryptoRegistry implementation.")
+    }
+
+    /// Allocate `len` of random from `dyn SecureRandom` instance using the
+    /// requested `algorithm_name`.
+    ///
+    /// If no `algorithm_name` is provided, a cryptographically strong one will
+    /// be choosen.
+    ///
+    /// Example:
+    ///
+    /// ```text
+    /// let random_u64 = u64::from_ne_bytes(
+    ///     crypto_registry_instance.prng_get_random_bytes(None, size_of::<u64>())
+    /// );
+    /// ```
+    fn prng_get_random_bytes(&self, algorithm_name: Option<&str>, len: usize) -> Vec<u8> {
+        let mut target = vec![0u8; len];
+        self.prng_fill_with_random(algorithm_name, &mut target);
+        target
     }
 
     /// Return Signature Engine (SE) algorithm factories provided by this bundle.

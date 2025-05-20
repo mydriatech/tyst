@@ -24,6 +24,9 @@ mod factory_registry;
 #[cfg(feature = "internal")]
 pub use tyst_crypto::misc;
 
+#[cfg(feature = "internal")]
+pub use tyst_crypto::util;
+
 #[cfg(test)]
 pub mod test {
     //! Test utilities.
