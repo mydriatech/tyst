@@ -8,7 +8,7 @@ RUN \
     xz -k -6 target/x86_64-unknown-linux-musl/release/tyst-api-rest && \
     mv target/x86_64-unknown-linux-musl/release/tyst-api-rest.xz tyst-api-rest.xz && \
     ./bin/extract-third-party-licenses.sh && \
-    tar cJf licenses.tar.xz licenses/
+    XZ_OPT='-9' tar cJf licenses.tar.xz licenses/
 
 FROM ghcr.io/mydriatech/the-ground-up:1.0.0 as tgu
 
