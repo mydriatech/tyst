@@ -20,11 +20,12 @@
 
 extern crate sha2;
 
+use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [Sha2Digest].
 pub struct Sha2DigestFactory {
@@ -34,23 +35,19 @@ pub struct Sha2DigestFactory {
 impl Default for Sha2DigestFactory {
     fn default() -> Self {
         Self {
-            // nistAlgorithms OBJECT IDENTIFIER ::= { joint-iso-ccitt(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) }
-            // hashAlgs OBJECT IDENTIFIER ::= { nistAlgorithms 2 }
-            // id-sha256 OBJECT IDENTIFIER ::= { hashAlgs 1 }
-            // 2.16.840.1.101.3.4.2.1
             provided: vec![
-                AlgorithmMetaData::new("SHA-224", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.4"),
                 AlgorithmMetaData::new("SHA-256", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.1"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_256)),
                 AlgorithmMetaData::new("SHA-384", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.2"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_384)),
                 AlgorithmMetaData::new("SHA-512", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.3"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_512)),
+                AlgorithmMetaData::new("SHA-224", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_224)),
                 AlgorithmMetaData::new("SHA-512-224", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.5"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_512_224)),
                 AlgorithmMetaData::new("SHA-512-256", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.6"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_512_256)),
             ],
         }
     }
@@ -121,33 +118,33 @@ impl Sha2Digest {
 impl Digest for Sha2Digest {
     fn update(&mut self, data: &[u8]) {
         match self {
-            Self::Sha224 { ref mut hasher } => self::sha2::Digest::update(hasher, data),
-            Self::Sha256 { ref mut hasher } => self::sha2::Digest::update(hasher, data),
-            Self::Sha384 { ref mut hasher } => self::sha2::Digest::update(hasher, data),
-            Self::Sha512 { ref mut hasher } => self::sha2::Digest::update(hasher, data),
-            Self::Sha512_224 { ref mut hasher } => self::sha2::Digest::update(hasher, data),
-            Self::Sha512_256 { ref mut hasher } => self::sha2::Digest::update(hasher, data),
+            Self::Sha224 { hasher } => self::sha2::Digest::update(hasher, data),
+            Self::Sha256 { hasher } => self::sha2::Digest::update(hasher, data),
+            Self::Sha384 { hasher } => self::sha2::Digest::update(hasher, data),
+            Self::Sha512 { hasher } => self::sha2::Digest::update(hasher, data),
+            Self::Sha512_224 { hasher } => self::sha2::Digest::update(hasher, data),
+            Self::Sha512_256 { hasher } => self::sha2::Digest::update(hasher, data),
         }
     }
 
     fn output(&mut self, out: &mut [u8]) {
         match self {
-            Self::Sha224 { ref mut hasher } => {
+            Self::Sha224 { hasher } => {
                 out.copy_from_slice(&self::sha2::Digest::finalize_reset(hasher))
             }
-            Self::Sha256 { ref mut hasher } => {
+            Self::Sha256 { hasher } => {
                 out.copy_from_slice(&self::sha2::Digest::finalize_reset(hasher))
             }
-            Self::Sha384 { ref mut hasher } => {
+            Self::Sha384 { hasher } => {
                 out.copy_from_slice(&self::sha2::Digest::finalize_reset(hasher))
             }
-            Self::Sha512 { ref mut hasher } => {
+            Self::Sha512 { hasher } => {
                 out.copy_from_slice(&self::sha2::Digest::finalize_reset(hasher))
             }
-            Self::Sha512_224 { ref mut hasher } => {
+            Self::Sha512_224 { hasher } => {
                 out.copy_from_slice(&self::sha2::Digest::finalize_reset(hasher))
             }
-            Self::Sha512_256 { ref mut hasher } => {
+            Self::Sha512_256 { hasher } => {
                 out.copy_from_slice(&self::sha2::Digest::finalize_reset(hasher))
             }
         };
@@ -175,14 +172,25 @@ impl Digest for Sha2Digest {
         }
     }
 
+    fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
+        Some(match self {
+            Self::Sha224 { hasher: _ } => oids::digest::SHA_224.to_vec(),
+            Self::Sha256 { hasher: _ } => oids::digest::SHA_256.to_vec(),
+            Self::Sha384 { hasher: _ } => oids::digest::SHA_384.to_vec(),
+            Self::Sha512 { hasher: _ } => oids::digest::SHA_512.to_vec(),
+            Self::Sha512_224 { hasher: _ } => oids::digest::SHA_512_224.to_vec(),
+            Self::Sha512_256 { hasher: _ } => oids::digest::SHA_512_256.to_vec(),
+        })
+    }
+
     fn reset(&mut self) {
         match self {
-            Self::Sha224 { ref mut hasher } => self::sha2::Digest::reset(hasher),
-            Self::Sha256 { ref mut hasher } => self::sha2::Digest::reset(hasher),
-            Self::Sha384 { ref mut hasher } => self::sha2::Digest::reset(hasher),
-            Self::Sha512 { ref mut hasher } => self::sha2::Digest::reset(hasher),
-            Self::Sha512_224 { ref mut hasher } => self::sha2::Digest::reset(hasher),
-            Self::Sha512_256 { ref mut hasher } => self::sha2::Digest::reset(hasher),
+            Self::Sha224 { hasher } => self::sha2::Digest::reset(hasher),
+            Self::Sha256 { hasher } => self::sha2::Digest::reset(hasher),
+            Self::Sha384 { hasher } => self::sha2::Digest::reset(hasher),
+            Self::Sha512 { hasher } => self::sha2::Digest::reset(hasher),
+            Self::Sha512_224 { hasher } => self::sha2::Digest::reset(hasher),
+            Self::Sha512_256 { hasher } => self::sha2::Digest::reset(hasher),
         }
     }
 }

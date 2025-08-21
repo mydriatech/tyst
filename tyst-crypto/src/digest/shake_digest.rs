@@ -19,13 +19,13 @@
 //! algorithms.
 //!
 //! Based on the Keccak message digest algorithm.
+use super::keccak_digest::KeccakDigest;
+use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
-use tyst_traits::CryptoRegistry;
-
-use super::keccak_digest::KeccakDigest;
 
 /// Factory for [ShakeDigest].
 pub struct ShakeDigestFactory {
@@ -37,9 +37,9 @@ impl Default for ShakeDigestFactory {
         Self {
             provided: vec![
                 AlgorithmMetaData::new("SHAKE128", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.11"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHAKE128)),
                 AlgorithmMetaData::new("SHAKE256", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.12"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHAKE256)),
             ],
         }
     }
@@ -138,6 +138,14 @@ impl Digest for ShakeDigest {
         ShakeDigest::get_algorithm_name(self)
     }
 
+    fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
+        Some(match self.get_digest_size_bits() {
+            128 => oids::digest::SHAKE128.to_vec(),
+            256 => oids::digest::SHAKE256.to_vec(),
+            _ => panic!("not implemented"),
+        })
+    }
+
     fn reset(&mut self) {
         ShakeDigest::reset(self)
     }
@@ -169,7 +177,8 @@ mod tests {
                     .hash(&tyst_encdec::hex::decode(msg).unwrap()),
             );
             assert_eq!(
-                hash_as_hex.len()*4, bit_length*2,
+                hash_as_hex.len() * 4,
+                bit_length * 2,
                 "Failed to generate the correct hash size for bit_length '{bit_length}' and messages '{msg}'."
             );
             assert_eq!(

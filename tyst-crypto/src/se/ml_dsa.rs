@@ -52,6 +52,8 @@ use self::poly_vec_l::PolyVecL;
 use self::poly_vec_matrix::PolyVecMatrix;
 use crate::digest::shake_digest::ShakeDigest;
 use std::sync::Arc;
+use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
@@ -60,31 +62,43 @@ use tyst_traits::se::PrivateKey;
 use tyst_traits::se::PublicKey;
 use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for the [MldsaEngine].
 pub struct MldsaSignatureEngineFactory {
     provided: Vec<AlgorithmMetaData>,
 }
 
-//joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3)
-//  id-ml-dsa-44(17)
-//  id-ml-dsa-65(18)
-//  id-ml-dsa-87(19)
-//  id-hash-ml-dsa-44-with-sha512(32)
-//  id-hash-ml-dsa-65-with-sha512(33)
-//  id-hash-ml-dsa-87-with-sha512(34)
+/*
+impl MldsaSignatureEngineFactory {
+    /// `2.16.840.1.101.3.4.3.17`
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3) ml-dsa-44(17)
+    const OID_ML_DSA_44: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 3, 17];
+    /// `2.16.840.1.101.3.4.3.18`
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3) ml-dsa-65(18)
+    const OID_ML_DSA_65: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 3, 18];
+    /// `2.16.840.1.101.3.4.3.18`
+    ///
+    /// joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) sigAlgs(3) ml-dsa-87(19)
+    const OID_ML_DSA_87: &[u32] = &[2, 16, 840, 1, 101, 3, 4, 3, 19];
+
+}*/
 
 impl Default for MldsaSignatureEngineFactory {
+    // TODO: Add support for the pre-hash variants
+    //  id-hash-ml-dsa-44-with-sha512(32)
+    //  id-hash-ml-dsa-65-with-sha512(33)
+    //  id-hash-ml-dsa-87-with-sha512(34)
     fn default() -> Self {
         Self {
             provided: vec![
                 AlgorithmMetaData::new("ML-DSA-44", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.3.17"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::se::ML_DSA_44)),
                 AlgorithmMetaData::new("ML-DSA-65", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.3.18"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::se::ML_DSA_65)),
                 AlgorithmMetaData::new("ML-DSA-87", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.3.19"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::se::ML_DSA_87)),
             ],
         }
     }
@@ -144,13 +158,13 @@ impl SignatureEngine for MldsaEngine {
     fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
         let algorithm = match self.algorithm_name.as_str() {
             "ML-DSA-44" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 3, 17]).unwrap(),
+                rasn::types::Oid::new(oids::se::ML_DSA_44).unwrap(),
             ),
             "ML-DSA-65" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 3, 18]).unwrap(),
+                rasn::types::Oid::new(oids::se::ML_DSA_65).unwrap(),
             ),
             "ML-DSA-87" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[2, 16, 840, 1, 101, 3, 4, 3, 19]).unwrap(),
+                rasn::types::Oid::new(oids::se::ML_DSA_87).unwrap(),
             ),
             bad_alg => {
                 panic!("Unsupported signature algorithm '{bad_alg}'.");
@@ -158,7 +172,7 @@ impl SignatureEngine for MldsaEngine {
         };
         let algorithm_identifier = rasn_pkix::AlgorithmIdentifier {
             algorithm,
-            // https://www.rfc-editor.org/rfc/rfc8410#section-6
+            //parameters: Some(rasn::types::Any::new(rasn::der::encode(&()).unwrap())),
             parameters: None,
         };
         rasn::der::encode(&algorithm_identifier).ok()
@@ -183,7 +197,7 @@ impl SignatureEngine for MldsaEngine {
                 self.init_and_sign_internal(
                     mldsa_private_key.get_tr(),
                     false,
-                    None,
+                    Some(&[]),
                     data,
                     mldsa_private_key.get_rho(),
                     mldsa_private_key.get_k(),
@@ -207,7 +221,7 @@ impl SignatureEngine for MldsaEngine {
                     mldsa_public_key.get_rho(),
                     mldsa_public_key.get_t1_packed(),
                     false,
-                    None,
+                    Some(&[]),
                 );
                 self.verify_internal_msg(
                     signature,
@@ -253,7 +267,9 @@ impl MldsaEngine {
             let pub_key = MldsaPublicKey::new(&MldsaPublicKey::encode(&rho, &t1));
             (pub_key, priv_key)
         } else {
-            panic!("This instance was never instantiated with a PRNG. Key generation is not available.");
+            panic!(
+                "This instance was never instantiated with a PRNG. Key generation is not available."
+            );
         }
     }
 
@@ -395,6 +411,7 @@ impl MldsaEngine {
             shake256_digest.update(ctx);
         }
         shake256_digest.update(msg);
+
         self.generate_signature(shake256_digest, rho, key, t0_enc, s1_enc, s2_enc, rnd)
     }
 
@@ -433,6 +450,9 @@ impl MldsaEngine {
         // 𝜇 ← H(BytesToBits(𝑡𝑟)||𝑀 , 64)
         let mut mu = [0u8; MldsaParams::CRH_BYTES];
         shake256_digest.finalize(&mut mu);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("mu: {}", tyst_encdec::hex::encode(&mu));
+        }
         // Decode secret key parts
         let mut t0 = PolyVecK::new(&self.params);
         let mut s1 = PolyVecL::new(&self.params);
@@ -464,9 +484,16 @@ impl MldsaEngine {
         key_mu[o..o + MldsaParams::RND_BYTES].copy_from_slice(&rnd[0..MldsaParams::RND_BYTES]);
         o += MldsaParams::RND_BYTES;
         key_mu[o..o + MldsaParams::CRH_BYTES].copy_from_slice(&mu[0..MldsaParams::CRH_BYTES]);
+        //log::debug!("key_mu: {}", tyst_encdec::hex::encode(&key_mu));
         shake256_digest.update(&key_mu);
         let mut rho_double_prime = [0u8; MldsaParams::CRH_BYTES];
-        shake256_digest.finalize(&mut rho_double_prime[0..MldsaParams::CRH_BYTES]);
+        shake256_digest.finalize(&mut rho_double_prime);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!(
+                "rho_double_prime: {}",
+                tyst_encdec::hex::encode(&rho_double_prime)
+            );
+        }
         // initialize counter 𝜅. κ: kappa
         let mut kappa = 0;
         // (𝐳, 𝐡) ← ⊥
@@ -603,12 +630,18 @@ impl MldsaEngine {
     */
 
     /// NIST FIPS 204 Algorithm 8 (start)
+    ///
+    /// `ctx`: context string 𝑐𝑡𝑥 (a byte string of 255 or fewer bytes).
     pub fn init_verify(&mut self, rho: &[u8], t1_enc: &[u8], pre_hash: bool, ctx: Option<&[u8]>) {
         // 𝑡𝑟 ← H(𝑝𝑘, 64)
         self.digest.update(rho);
         self.digest.update(t1_enc);
         let mut tr = [0u8; MldsaParams::TR_BYTES];
         self.digest.finalize(&mut tr);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("tr: {}", tyst_encdec::hex::encode(&tr));
+            log::trace!("ctx: {:?}", ctx);
+        }
         // self.digest ← (H(BytesToBits(𝑡𝑟)||𝑀 ′ , 64))
         self.digest.update(&tr);
         if let Some(ctx) = ctx {
@@ -633,26 +666,46 @@ impl MldsaEngine {
         t1_encoded: &[u8],
     ) -> bool {
         if sig.len() != self.params.crypto_bytes {
+            if log::log_enabled!(log::Level::Debug) {
+                log::debug!("Wrong signature length.")
+            }
             return false;
         }
         // Decode public key
         let mut t1 = PolyVecK::new(&self.params);
         packing::unpack_public_key_t1(&self.params, &mut t1, t1_encoded);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("t1: {t1}");
+        }
         // Decode signer’s commitment hash 𝑐,̃ response 𝐳, and hint 𝐡
         let mut z = PolyVecL::new(&self.params);
         let mut h = PolyVecK::new(&self.params);
         if !packing::unpack_signature(&self.params, &mut z, &mut h, sig) {
+            if log::log_enabled!(log::Level::Debug) {
+                log::debug!("Failed to unpack signature.")
+            }
             return false;
+        }
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("z: {z}");
+            log::trace!("h: {h}");
         }
         // Use only first c_tilde bytes of signature.
         let c_tilde = &sig[0..self.params.c_tilde];
         if z.check_norm(i32::try_from(self.params.gamma1 - self.params.beta).unwrap()) {
+            if log::log_enabled!(log::Level::Debug) {
+                log::debug!("z.check_norm failed.")
+            }
             return false;
         }
         // 𝜇 ← (H(BytesToBits(𝑡𝑟)||𝑀 ′ , 64))
         let mut mu = [0u8; MldsaParams::CRH_BYTES];
         self.digest.update(msg);
         self.digest.finalize(&mut mu);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("msg: {}", tyst_encdec::hex::encode(msg));
+            log::trace!("mu: {}", tyst_encdec::hex::encode(&mu));
+        }
         // Matrix-vector multiplication; compute 𝐰Approx = 𝐀𝐳 − 𝑐𝐭1 ⋅ 2𝑑
         let mut c_hat = Poly::new(&self.params);
         c_hat.challenge(c_tilde);
@@ -675,11 +728,21 @@ impl MldsaEngine {
         w1.use_hint_self(&h);
         // 𝑐 ′̃ ← H(𝜇||w1Encode(𝐰′1 ), 𝜆/4)
         let buf = w1.pack_w1();
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("w1.pack_w1: {}", tyst_encdec::hex::encode(&buf));
+        }
         let mut shake256_digest = Self::get_shake256_digest();
         shake256_digest.update(&mu);
         shake256_digest.update(&buf[0..self.params.k * self.params.poly_w1_packed_bytes]);
         let mut c_tilde_prime = vec![0u8; self.params.c_tilde];
         shake256_digest.finalize(&mut c_tilde_prime);
+        if log::log_enabled!(log::Level::Trace) {
+            log::trace!("c_tilde: {}", tyst_encdec::hex::encode(c_tilde));
+            log::trace!(
+                "c_tilde_prime: {}",
+                tyst_encdec::hex::encode(&c_tilde_prime)
+            );
+        }
         crate::util::external_constant_time_equals(c_tilde, &c_tilde_prime)
     }
 }

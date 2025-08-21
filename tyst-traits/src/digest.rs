@@ -41,11 +41,23 @@ pub trait Digest: Send {
     /// Return human readable identifier of the crypto algorithm.
     fn get_algorithm_name(&self) -> String;
 
+    /// Return digest algorithm Object Identifier of the crypto algorithm if
+    /// such OID is defined.
+    fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
+        None
+    }
+
     /// Convinience method for ingesting the provided data and returning the
     /// output state (hash) in a single invocation.
     fn hash(&mut self, data: &[u8]) -> Vec<u8> {
-        self.update(data);
-        let mut out = vec![0u8; self.get_digest_size_bits() >> 3];
+        Self::hash_many(self, &[data])
+    }
+
+    /// Convinience method for ingesting the provided data and returning the
+    /// output state (hash) in a single invocation.
+    fn hash_many(&mut self, data: &[&[u8]]) -> Vec<u8> {
+        data.iter().for_each(|data| self.update(data));
+        let mut out = vec![0; self.get_digest_size_bits() / 8];
         self.finalize(&mut out);
         out
     }

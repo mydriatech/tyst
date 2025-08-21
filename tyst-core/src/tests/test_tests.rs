@@ -87,7 +87,8 @@ fn test_digest_keccak_384() {
             .hash(&tyst_encdec::hex::decode(msg).unwrap()),
     );
     assert_eq!(
-        hash_as_hex, "2c23146a63a29acf99e73b88f8c24eaa7dc60aa771780ccc006afbfa8fe2479b2dd2b21362337441ac12b515911957ff",
+        hash_as_hex,
+        "2c23146a63a29acf99e73b88f8c24eaa7dc60aa771780ccc006afbfa8fe2479b2dd2b21362337441ac12b515911957ff",
         "Failed to generate the correct hash."
     );
 }
@@ -104,7 +105,8 @@ fn test_digest_shake256() {
             .hash(&tyst_encdec::hex::decode(msg).unwrap()),
     );
     assert_eq!(
-        hash_as_hex, "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be",
+        hash_as_hex,
+        "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be",
         "Failed to generate the correct hash."
     );
 }

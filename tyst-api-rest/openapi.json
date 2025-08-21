@@ -121,7 +121,7 @@
     "/health": {
       "get": {
         "tags": [
-          "health_resources"
+          "health"
         ],
         "summary": "This endpoint returns the combined status of initialized, readiness and\nliveness of a microservice.\n\nCorresponds to the Kubernetes readiness probe.",
         "operationId": "health",
@@ -157,7 +157,7 @@
     "/health/live": {
       "get": {
         "tags": [
-          "health_resources"
+          "health"
         ],
         "summary": "This endpoint returns the liveness of a microservice, or whether it\nencountered a bug or deadlock. If this check fails, the microservice is not\nrunning and can be stopped.\n\nThis endpoint corresponds to the Kubernetes liveness probe, which automatically\nrestarts the pod if the check fails.",
         "operationId": "health_live",
@@ -193,7 +193,7 @@
     "/health/ready": {
       "get": {
         "tags": [
-          "health_resources"
+          "health"
         ],
         "summary": "This endpoint returns the readiness of a microservice, or whether it is ready\nto process requests.\n\nCorresponds to the Kubernetes readiness probe.",
         "operationId": "health_ready",
@@ -229,7 +229,7 @@
     "/health/started": {
       "get": {
         "tags": [
-          "health_resources"
+          "health"
         ],
         "summary": "In MicroProfile Health 3.1 and later, you can use this endpoint to determine\nwhether your deployed applications are initialized, according to criteria that\nyou define.\n\nCorresponds to the Kubernetes startup probe.",
         "operationId": "health_started",

@@ -1,7 +1,7 @@
-use rasn::prelude::*;
-use rasn::types::Integer;
 use rasn::AsnType;
 use rasn::Encode;
+use rasn::prelude::*;
+use rasn::types::Integer;
 
 /// As defined in [RFC8017 Appendix A.2.3](https://datatracker.ietf.org/doc/html/rfc8017#appendix-A.2.3)
 #[derive(AsnType, Clone, Debug, Encode, PartialEq, Eq, Hash)]

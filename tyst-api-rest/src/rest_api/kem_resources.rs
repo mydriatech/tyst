@@ -17,9 +17,14 @@
 
 //! Key Encapsulation Mechanism (KEM) REST API resources
 
+use super::AppState;
 use super::rest_api_common::AlgorithmMetaDataItem;
 use super::rest_api_common::ConfinedKeyMaterial;
-use super::AppState;
+use actix_web::Error;
+use actix_web::HttpRequest;
+use actix_web::HttpResponse;
+use actix_web::Responder;
+use actix_web::Result;
 use actix_web::error::ErrorBadRequest;
 use actix_web::get;
 use actix_web::http::StatusCode;
@@ -27,15 +32,11 @@ use actix_web::post;
 use actix_web::web::Data;
 use actix_web::web::Json;
 use actix_web::web::Path;
-use actix_web::Error;
-use actix_web::HttpRequest;
-use actix_web::HttpResponse;
-use actix_web::Responder;
-use actix_web::Result;
 use serde::{Deserialize, Serialize};
 use serde_with::base64::Base64;
 use serde_with::serde_as;
 use std::sync::Arc;
+use tyst::Tyst;
 use tyst::encdec::hex::ToHex;
 use tyst::traits::common::BasicConfinement;
 use tyst::traits::common::ConfinedObjectAsBytes;
@@ -47,7 +48,6 @@ use tyst::traits::kem::DecapsulationKey;
 use tyst::traits::kem::EncapsulationKey;
 use tyst::traits::kem::KemCipherText;
 use tyst::traits::kem::KemParams;
-use tyst::Tyst;
 use utoipa::ToSchema;
 
 #[serde_as]

@@ -22,6 +22,8 @@
 
 use std::error::Error;
 
+use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -30,13 +32,6 @@ use tyst_traits::se::PrivateKey;
 use tyst_traits::se::PublicKey;
 use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
-use tyst_traits::CryptoRegistry;
-
-// https://www.rfc-editor.org/rfc/rfc8410#section-9
-// id-edwards-curve-algs OBJECT IDENTIFIER ::= { 1 3 101 }
-// id-Ed25519       OBJECT IDENTIFIER ::= { id-edwards-curve-algs 112 }
-
-const ISO_IDENTIFIED_ORGANISATION_ID_EDWARDS_CURVE_ALGS_ID_ED25519: &str = "1.3.101.112";
 
 /// Factory for [EddsaSignatureEngine].
 pub struct EddsaSignatureEngineFactory {
@@ -47,7 +42,7 @@ impl Default for EddsaSignatureEngineFactory {
         Self {
             provided: vec![
                 AlgorithmMetaData::new("EdDSA-Ed25519", env!("CARGO_PKG_NAME"))
-                    .set_oid(ISO_IDENTIFIED_ORGANISATION_ID_EDWARDS_CURVE_ALGS_ID_ED25519),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::se::EDDSA_ED25519)),
             ],
         }
     }
@@ -162,7 +157,7 @@ impl SignatureEngine for EddsaSignatureEngine {
     fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
         let algorithm = match self.algorithm_name.as_str() {
             "EdDSA-Ed25519" => rasn::types::ObjectIdentifier::from(
-                rasn::types::Oid::new(&[1, 3, 101, 112]).unwrap(),
+                rasn::types::Oid::new(oids::se::EDDSA_ED25519).unwrap(),
             ),
             bad_alg => {
                 panic!("Unsupported signature algorithm '{bad_alg}'.");

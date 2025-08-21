@@ -31,9 +31,11 @@ mod mac {
 }
 pub mod misc {
     //! Miscellaneous cryptographic primitive implementations.
+    mod binary_digest_tree;
     mod pbkdf2;
     mod pbmac1;
 
+    pub use self::binary_digest_tree::*;
     pub use self::pbkdf2::Pbkdf2;
     pub use self::pbmac1::Pbmac1;
 }
@@ -56,6 +58,7 @@ pub mod test {
 pub mod util;
 
 use std::sync::Arc;
+use tyst_traits::CryptoBundle;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::Factory;
@@ -65,7 +68,6 @@ use tyst_traits::prng::SecureRandom;
 use tyst_traits::prng::SecureRandomParams;
 use tyst_traits::se::SignatureEngine;
 use tyst_traits::se::SignatureEngineParams;
-use tyst_traits::CryptoBundle;
 
 /// Standard collection of relevant crypto algorithm implementations.
 #[derive(Default)]

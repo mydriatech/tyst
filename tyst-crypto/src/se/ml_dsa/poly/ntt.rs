@@ -19,8 +19,8 @@
 //!
 //! See also [Wikipedia on number-theoretic transform](https://en.wikipedia.org/wiki/Number_theoretic_transform#Number-theoretic_transform).
 
-use super::reduce;
 use super::MldsaParams;
+use super::reduce;
 
 /// NIST FIPS 204 Appendix B defines the constants.
 ///

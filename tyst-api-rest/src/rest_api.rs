@@ -28,11 +28,11 @@ mod se_resources;
 use self::kem_resources::KemKeyPairHolder;
 use self::se_resources::SeKeyPairHolder;
 use actix_web::http::header::ContentType;
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpResponse, HttpServer, Responder, get, web};
 use crossbeam_skiplist::SkipMap;
 use std::sync::Arc;
-use tyst_api_rest_health::health_resources;
 use tyst_api_rest_health::AppHealth;
+use tyst_api_rest_health::health_resources;
 use utoipa::OpenApi;
 
 /// Number of parallel requests the can be served for each assigned CPU core.

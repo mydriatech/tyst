@@ -18,6 +18,8 @@
 //! SHA3 versions of Keyed-Hashing for Message Authentication (HMAC) defined in
 //! [RFC 2104](https://datatracker.ietf.org/doc/html/rfc2104).
 
+use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
@@ -25,7 +27,6 @@ use tyst_traits::mac::Mac;
 use tyst_traits::mac::MacKey;
 use tyst_traits::mac::MacParams;
 use tyst_traits::mac::ToMacKey;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [HmacMac].
 pub struct HmacMacFactory {
@@ -33,27 +34,23 @@ pub struct HmacMacFactory {
 }
 
 impl Default for HmacMacFactory {
-    /*
-    oint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithms(4) hashAlgs(2)
-    → 2.16.840.1.101.3.4.2
-
-    id-hmacWithSHA3-224 OBJECT IDENTIFIER ::= { hashAlgs 13 }
-    id-hmacWithSHA3-256 OBJECT IDENTIFIER ::= { hashAlgs 14 }
-    id-hmacWithSHA3-384 OBJECT IDENTIFIER ::= { hashAlgs 15 }
-    id-hmacWithSHA3-512 OBJECT IDENTIFIER ::= { hashAlgs 16 }
-
-    Note that SHA3-224 should not be used after 2023.
-    */
     fn default() -> Self {
         Self {
             provided: vec![
-                //AlgorithmMetaData::new("HMAC-SHA3-224", env!("CARGO_PKG_NAME")).set_oid("2.16.840.1.101.3.4.2.13"),
+                //AlgorithmMetaData::new("HMAC-SHA-224", env!("CARGO_PKG_NAME")).set_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA_224)),
+                AlgorithmMetaData::new("HMAC-SHA-256", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA_256)),
+                AlgorithmMetaData::new("HMAC-SHA-384", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA_384)),
+                AlgorithmMetaData::new("HMAC-SHA-512", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA_512)),
+                //AlgorithmMetaData::new("HMAC-SHA3-224", env!("CARGO_PKG_NAME")).set_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA3_224)),
                 AlgorithmMetaData::new("HMAC-SHA3-256", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.14"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA3_256)),
                 AlgorithmMetaData::new("HMAC-SHA3-384", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.15"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA3_384)),
                 AlgorithmMetaData::new("HMAC-SHA3-512", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.16"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA3_512)),
             ],
         }
     }
@@ -74,17 +71,47 @@ impl Factory for HmacMacFactory {
         _params: Self::Parameters,
     ) -> Box<Self::Type> {
         match algorithm_name {
+            "HMAC-SHA-256" => {
+                let digest = registry
+                    .digests()
+                    .by_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_256))
+                    .unwrap();
+                Box::new(HmacMac::<64>::new(registry, digest))
+            }
+            "HMAC-SHA-384" => {
+                let digest = registry
+                    .digests()
+                    .by_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_384))
+                    .unwrap();
+                Box::new(HmacMac::<128>::new(registry, digest))
+            }
+            "HMAC-SHA-512" => {
+                let digest = registry
+                    .digests()
+                    .by_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_512))
+                    .unwrap();
+                Box::new(HmacMac::<128>::new(registry, digest))
+            }
             //"HMAC-SHA3-256" => Box::new(Hmac::new(Digests::default().by_name("SHA3-224", None).unwrap(), 144)),
             "HMAC-SHA3-256" => {
-                let digest = registry.digests().by_name("SHA3-256").unwrap();
+                let digest = registry
+                    .digests()
+                    .by_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_256))
+                    .unwrap();
                 Box::new(HmacMac::<136>::new(registry, digest))
             }
             "HMAC-SHA3-384" => {
-                let digest = registry.digests().by_name("SHA3-384").unwrap();
+                let digest = registry
+                    .digests()
+                    .by_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_384))
+                    .unwrap();
                 Box::new(HmacMac::<104>::new(registry, digest))
             }
             "HMAC-SHA3-512" => {
-                let digest = registry.digests().by_name("SHA3-512").unwrap();
+                let digest = registry
+                    .digests()
+                    .by_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_512))
+                    .unwrap();
                 Box::new(HmacMac::<72>::new(registry, digest))
             }
             _ => panic!("not implemented"),
@@ -103,6 +130,14 @@ B bytes to avoid key recovery in some scenarios.
 
 Byte-length (B) is defined as:
 
+* 64 bytes for `HMAC-SHA-1`
+* 64 bytes for `HMAC-SHA-224`
+* 64 bytes for `HMAC-SHA-256`
+* 128 bytes for `HMAC-SHA-512/224`
+* 128 bytes for `HMAC-SHA-512/256`
+* 128 bytes for `HMAC-SHA-384`
+* 128 bytes for `HMAC-SHA-512`
+* 144 bytes for `HMAC-SHA3-224`
 * 136 bytes for `HMAC-SHA3-256`
 * 104 bytes for `HMAC-SHA3-384`
 * 72 bytes for `HMAC-SHA3-512`
@@ -227,9 +262,12 @@ impl<const B: usize> Mac for HmacMac<B> {
 
     fn get_algorithm_identifier(&self) -> Option<Vec<u8>> {
         let oid = match self.get_algorithm_name().as_str() {
-            "HMAC-SHA3-256" => vec![2, 16, 840, 1, 101, 3, 4, 2, 14],
-            "HMAC-SHA3-384" => vec![2, 16, 840, 1, 101, 3, 4, 2, 15],
-            "HMAC-SHA3-512" => vec![2, 16, 840, 1, 101, 3, 4, 2, 16],
+            "HMAC-SHA-256" => oids::mac::HMAC_SHA_256.to_vec(),
+            "HMAC-SHA-384" => oids::mac::HMAC_SHA_384.to_vec(),
+            "HMAC-SHA-512" => oids::mac::HMAC_SHA_512.to_vec(),
+            "HMAC-SHA3-256" => oids::mac::HMAC_SHA3_256.to_vec(),
+            "HMAC-SHA3-384" => oids::mac::HMAC_SHA3_384.to_vec(),
+            "HMAC-SHA3-512" => oids::mac::HMAC_SHA3_512.to_vec(),
             other => panic!("Unknown algorithm '{other}'."),
         };
         Some(
@@ -252,10 +290,22 @@ mod tests {
 
     const KEY: &'static str = "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b";
     const MESSAGE: &'static str = "4869205468657265";
-    const OUTPUTS: &[(usize,usize,&str)] = &[
-        (256, 136, "ba85192310dffa96e2a3a40e69774351140bb7185e1202cdcc917589f95e16bb"),
-        (384, 104, "68d2dcf7fd4ddd0a2240c8a437305f61fb7334cfb5d0226e1bc27dc10a2e723a20d370b47743130e26ac7e3d532886bd"),
-        (512, 72, "eb3fbd4b2eaab8f5c504bd3a41465aacec15770a7cabac531e482f860b5ec7ba47ccb2c6f2afce8f88d22b6dc61380f23a668fd3888bb80537c0a0b86407689e"),
+    const OUTPUTS: &[(usize, usize, &str)] = &[
+        (
+            256,
+            136,
+            "ba85192310dffa96e2a3a40e69774351140bb7185e1202cdcc917589f95e16bb",
+        ),
+        (
+            384,
+            104,
+            "68d2dcf7fd4ddd0a2240c8a437305f61fb7334cfb5d0226e1bc27dc10a2e723a20d370b47743130e26ac7e3d532886bd",
+        ),
+        (
+            512,
+            72,
+            "eb3fbd4b2eaab8f5c504bd3a41465aacec15770a7cabac531e482f860b5ec7ba47ccb2c6f2afce8f88d22b6dc61380f23a668fd3888bb80537c0a0b86407689e",
+        ),
     ];
 
     pub struct DummyCryptoRegistry {}

@@ -6,6 +6,7 @@ resolver = "2"
 members = [
     "tyst-traits",
     "tyst-encdec",
+    "tyst-oids",
     "tyst-core",
     "tyst-crypto",
     "tyst-api-rest",
@@ -14,7 +15,7 @@ members = [
 ]
 
 [workspace.package]
-edition = "2021"
+edition = "2024"
 license = "Apache-2.0 WITH AdditionRef-FWM-Exception-1.0.0"
 version = "0.0.0"
 repository = "https://github.com/mydriatech/tyst.git"
@@ -48,9 +49,9 @@ log = { version = "0.4", default-features = false, features = ["release_max_leve
 env_logger = { version = "0.11", default-features = false, features = [] }
 
 # ASN.1 https://docs.rs/rasn/latest/rasn/
-rasn = { version = "0.26", default-features = false, features = ["compiler"] }
-rasn-pkix = { version = "0.26", default-features = false, features = [] }
-rasn-cms = { version = "0.26", default-features = false, features = [] }
+rasn = { version = "0.27.1", default-features = false, features = ["compiler", "bytes"] }
+rasn-pkix = { version = "0.27.1", default-features = false, features = [] }
+rasn-cms = { version = "0.27.1", default-features = false, features = [] }
 
 # Async and concurrency
 crossbeam-skiplist = { version = "0.1", default-features = true, features = [] }

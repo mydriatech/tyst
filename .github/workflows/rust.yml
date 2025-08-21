@@ -54,7 +54,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Only approved licenses in SBOM
-      uses: EmbarkStudios/cargo-deny-action@v1
+      uses: EmbarkStudios/cargo-deny-action@v2
       with:
         command: check licenses
     # https://github.com/rustsec/rustsec

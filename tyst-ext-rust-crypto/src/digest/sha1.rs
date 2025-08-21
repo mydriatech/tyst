@@ -20,11 +20,12 @@
 
 extern crate sha1;
 
+use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [Sha1Digest].
 pub struct Sha1DigestFactory {
@@ -34,9 +35,9 @@ pub struct Sha1DigestFactory {
 impl Default for Sha1DigestFactory {
     fn default() -> Self {
         Self {
-            // iso(1) identified-organization(3) oiw(14) secsig(3) algorithms(2) hashAlgorithmIdentifier(26)
             provided: vec![
-                AlgorithmMetaData::new("SHA-1", env!("CARGO_PKG_NAME")).set_oid("1.3.14.3.2.26")
+                AlgorithmMetaData::new("SHA-1", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA_1)),
             ],
         }
     }
@@ -92,6 +93,10 @@ impl Digest for Sha1Digest {
 
     fn get_algorithm_name(&self) -> String {
         "SHA-1".to_string()
+    }
+
+    fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
+        Some(oids::digest::SHA_1.to_vec())
     }
 
     fn reset(&mut self) {

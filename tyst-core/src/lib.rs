@@ -24,6 +24,9 @@ mod factory_registry;
 #[cfg(feature = "internal")]
 pub use tyst_crypto::misc;
 
+#[cfg(feature = "internal")]
+pub use tyst_crypto::util;
+
 #[cfg(test)]
 pub mod test {
     //! Test utilities.
@@ -40,6 +43,8 @@ use std::ops::Deref;
 use std::sync::Arc;
 use std::sync::LazyLock;
 use std::sync::Mutex;
+use traits::CryptoBundle;
+use traits::CryptoRegistry;
 use traits::digest::Digest;
 use traits::digest::DigestParams;
 use traits::factory::Factory;
@@ -52,9 +57,8 @@ use traits::prng::SecureRandom;
 use traits::prng::SecureRandomParams;
 use traits::se::SignatureEngine;
 use traits::se::SignatureEngineParams;
-use traits::CryptoBundle;
-use traits::CryptoRegistry;
 pub use tyst_encdec as encdec;
+pub use tyst_oids as oids;
 pub use tyst_traits as traits;
 
 #[doc(hidden)]

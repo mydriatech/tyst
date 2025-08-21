@@ -18,17 +18,17 @@
 //! Digest REST API resources
 
 use super::rest_api_common::AlgorithmMetaDataItem;
+use actix_web::Error;
+use actix_web::HttpRequest;
+use actix_web::HttpResponse;
+use actix_web::Result;
 use actix_web::get;
 use actix_web::http::StatusCode;
 use actix_web::post;
 use actix_web::web::Path;
 use actix_web::web::Payload;
-use actix_web::Error;
-use actix_web::HttpRequest;
-use actix_web::HttpResponse;
-use actix_web::Result;
-use tyst::encdec::hex::ToHex;
 use tyst::Tyst;
+use tyst::encdec::hex::ToHex;
 
 /// List available digest algorithms
 ///

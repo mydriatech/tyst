@@ -31,7 +31,7 @@ pub struct Pbkdf2 {
 
 impl Pbkdf2 {
     /// iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-5(5) pBKDF2(12)
-    pub const OID: &[u32] = &[2, 16, 840, 113549, 1, 5, 12];
+    pub const OID: &[u32] = &[1, 2, 840, 113549, 1, 5, 12];
 
     /** Return a new instance using the provided [Mac].
 
@@ -63,6 +63,8 @@ impl Pbkdf2 {
 
     A minimum iteration count of 1,000 is recommended.
     ```
+
+    `key_length` is the length in octets of the derived key.
     */
     pub fn new(salt: &[u8], iteration_count: usize, key_length: usize, prf: Box<dyn Mac>) -> Self {
         Self {
@@ -71,6 +73,55 @@ impl Pbkdf2 {
             dk_len: key_length,
             prf,
         }
+    }
+
+    /// Return a new instance from the AlgorithmIdentifier which includes salt, c, dk_len and PRF algorithm.
+    pub fn from_algorithm_identifier(
+        crypto_registry_instance: &dyn tyst_traits::CryptoRegistry,
+        algorithm_identifier: &[u8],
+    ) -> Option<Self> {
+        let algorithm_identifier =
+            rasn::der::decode::<rasn_pkix::AlgorithmIdentifier>(algorithm_identifier).unwrap();
+        if !algorithm_identifier.algorithm.to_vec().eq(&Self::OID) {
+            log::debug!(
+                "AlgorithmIdentifier OID was '{:?}'. Expected '{:?}'.",
+                algorithm_identifier.algorithm.to_vec(),
+                Self::OID
+            );
+            return None;
+        }
+        if let Some(parameters) = algorithm_identifier.parameters {
+            let parameters = rasn::der::decode::<rasn_cms::algorithms::Pbkdf2Parameters>(
+                &parameters.into_bytes(),
+            )
+            .unwrap();
+            match parameters.salt {
+                rasn_cms::algorithms::Pbkdf2Salt::Specified(salt) => {
+                    let iteration_count = parameters.iteration_count.try_into().unwrap();
+                    let key_length = parameters
+                        .key_length
+                        .map(|value| value.try_into().unwrap())
+                        .unwrap_or(salt.len());
+                    if let Some(prf) = crypto_registry_instance
+                        .macs()
+                        .by_oid(&tyst_encdec::oid::as_string(&parameters.prf.algorithm))
+                    {
+                        return Some(Self::new(&salt, iteration_count, key_length, prf));
+                    } else {
+                        log::debug!(
+                            "PBKDF2 parameters specify an unknown/unsupported PRF (MAC) OID: {:?}",
+                            parameters.prf.algorithm.to_vec()
+                        );
+                    }
+                }
+                rasn_cms::algorithms::Pbkdf2Salt::OtherSource(_algorithm_identifier) => {
+                    log::debug!("This PBKDF2 implementation only supports 'specified' salt.");
+                }
+            };
+        } else {
+            log::debug!("PBKDF2 parameters are required.");
+        }
+        None
     }
 
     /// Get human readable implementation identifier.
@@ -95,6 +146,7 @@ impl Pbkdf2 {
                         rasn::types::OctetString::from(self.salt.clone()),
                     ),
                     iteration_count: self.iteration_count.into(),
+                    // "the length in octets of the derived key"
                     key_length: Some(self.dk_len.into()),
                     prf,
                 })
@@ -255,6 +307,20 @@ mod tests {
             "7361006c74",
             4096,
             "c0da8018507821037c76801cccf3cc8a2b00acb7",
+        ),
+        //
+        /* Generated with BouncyCastle's v1.79 implementation.
+        password: 666f6f626172313233
+        n   :     1024
+        salt:     612073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74
+        key:      23656b2da4f8b6d3
+        */
+        (
+            "2.16.840.1.101.3.4.2.16",
+            "666f6f626172313233",
+            "612073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74792073616c74",
+            1024,
+            "23656b2da4f8b6d3108ffe6cfc02d27218e3aded7a55120cdbad9dbfb22a8af766acc3d6a4495ed4c4863928c168f4651f859a0864353d2298d15756d9ca1fc61fd0",
         ),
     ];
 

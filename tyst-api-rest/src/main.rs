@@ -25,7 +25,7 @@ mod rest_api;
 use conf::AppConfig;
 use std::process::ExitCode;
 use std::sync::Arc;
-use tokio::signal::unix::{signal, SignalKind};
+use tokio::signal::unix::{SignalKind, signal};
 use tyst::Tyst;
 use tyst_api_rest_health::AppHealth;
 

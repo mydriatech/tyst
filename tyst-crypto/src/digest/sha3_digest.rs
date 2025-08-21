@@ -19,13 +19,13 @@
 //!
 //! Based on the Keccak message digest algorithm.
 
+use super::keccak_digest::KeccakDigest;
+use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::digest::Digest;
 use tyst_traits::digest::DigestParams;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
-use tyst_traits::CryptoRegistry;
-
-use super::keccak_digest::KeccakDigest;
 
 /// Factory for [Sha3Digest].
 pub struct Sha3DigestFactory {
@@ -34,18 +34,16 @@ pub struct Sha3DigestFactory {
 
 impl Default for Sha3DigestFactory {
     fn default() -> Self {
-        // https://csrc.nist.gov/projects/computer-security-objects-register/algorithm-registration
-        // joint-iso-itu-t(2) country(16) us(840) organization(1) gov(101) csor(3) nistAlgorithm(4) hashAlgs(2) N
         Self {
             provided: vec![
                 AlgorithmMetaData::new("SHA3-224", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.7"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_224)),
                 AlgorithmMetaData::new("SHA3-256", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.8"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_256)),
                 AlgorithmMetaData::new("SHA3-384", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.9"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_384)),
                 AlgorithmMetaData::new("SHA3-512", env!("CARGO_PKG_NAME"))
-                    .set_oid("2.16.840.1.101.3.4.2.10"),
+                    .set_oid(&tyst_encdec::oid::as_string(oids::digest::SHA3_512)),
             ],
         }
     }
@@ -101,6 +99,16 @@ impl Digest for Sha3Digest {
 
     fn get_algorithm_name(&self) -> String {
         Self::ALGORITHM_NAME_PREFIX.to_string() + &self.get_digest_size_bits().to_string()
+    }
+
+    fn get_algorithm_oid(&self) -> Option<Vec<u32>> {
+        Some(match self.get_digest_size_bits() {
+            224 => oids::digest::SHA3_224.to_vec(),
+            256 => oids::digest::SHA3_256.to_vec(),
+            384 => oids::digest::SHA3_384.to_vec(),
+            512 => oids::digest::SHA3_512.to_vec(),
+            _ => panic!("not implemented"),
+        })
     }
 
     fn reset(&mut self) {
@@ -190,7 +198,8 @@ mod tests {
                 &Sha3Digest::new(bit_length).hash(&tyst_encdec::hex::decode(msg).unwrap()),
             );
             assert_eq!(
-                hash_as_hex.len()*4, bit_length,
+                hash_as_hex.len() * 4,
+                bit_length,
                 "Failed to generate the correct hash size for bit_length '{bit_length}' and messages '{msg}'."
             );
             assert_eq!(

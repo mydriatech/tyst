@@ -1,0 +1,10 @@
+[package]
+version = { workspace = true }
+edition = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+publish = { workspace = true }
+name = "tyst_oids"
+description = "TYST Well-known Object Identifiers"
+
+[dependencies]

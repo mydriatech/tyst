@@ -15,29 +15,11 @@
     limitations under the License.
 */
 
-//! Example of using message digest (hash)
+#![forbid(unsafe_code)]
+#![warn(missing_docs)]
+#![doc = include_str!("../README.md")]
 
-use tyst::Tyst;
-use tyst::encdec::hex::ToHex;
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let algorithm = "SHA3-384";
-    println!(
-        "{algorithm} is available: {}",
-        Tyst::instance()
-            .digests()
-            .get_algorithms()
-            .contains(&algorithm.to_string())
-    );
-    let message = "This will be hashed!";
-    println!(
-        "{algorithm} hash of '{message}' as hex:   {}",
-        Tyst::instance()
-            .digests()
-            .by_name(algorithm)
-            .unwrap()
-            .hash(message.as_bytes())
-            .to_hex()
-    );
-    Ok(())
-}
+pub mod digest;
+pub mod kem;
+pub mod mac;
+pub mod se;

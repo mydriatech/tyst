@@ -20,6 +20,8 @@
 
 use ml_kem::EncodedSizeUser;
 use ml_kem::KemCore;
+use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::common::ConfinedObjectAsBytes;
 use tyst_traits::common::ConfinementError;
 use tyst_traits::factory::AlgorithmMetaData;
@@ -30,7 +32,6 @@ use tyst_traits::kem::Kem;
 use tyst_traits::kem::KemCipherText;
 use tyst_traits::kem::KemParams;
 use tyst_traits::kem::KemSharedSecret;
-use tyst_traits::CryptoRegistry;
 
 /// Factory for [MlkemKem].
 pub struct MlkemKemFactory {
@@ -40,9 +41,12 @@ impl Default for MlkemKemFactory {
     fn default() -> Self {
         Self {
             provided: vec![
-                AlgorithmMetaData::new("ML-KEM-512", env!("CARGO_PKG_NAME")),
-                AlgorithmMetaData::new("ML-KEM-768", env!("CARGO_PKG_NAME")),
-                AlgorithmMetaData::new("ML-KEM-1024", env!("CARGO_PKG_NAME")),
+                AlgorithmMetaData::new("ML-KEM-512", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(oids::kem::ML_KEM_512)),
+                AlgorithmMetaData::new("ML-KEM-768", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(oids::kem::ML_KEM_768)),
+                AlgorithmMetaData::new("ML-KEM-1024", env!("CARGO_PKG_NAME"))
+                    .set_oid(&tyst_encdec::oid::as_string(oids::kem::ML_KEM_1024)),
             ],
         }
     }

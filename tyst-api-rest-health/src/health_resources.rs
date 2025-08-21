@@ -20,7 +20,7 @@
 use crate::AppHealth;
 use actix_web::http::StatusCode;
 use actix_web::web::Data;
-use actix_web::{get, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, get};
 use serde::Serialize;
 use std::sync::Arc;
 use utoipa::ToSchema;
@@ -84,6 +84,7 @@ liveness of a microservice.
 Corresponds to the Kubernetes readiness probe.
  */
 #[utoipa::path(
+    tag = "health",
     responses(
         (status = 200, description = "Up", body = inline(HealthResponse), content_type = "application/json",),
         (status = 500, description = "Undetermined"),
@@ -107,6 +108,7 @@ to process requests.
 Corresponds to the Kubernetes readiness probe.
  */
 #[utoipa::path(
+    tag = "health",
     responses(
         (status = 200, description = "Up", body = inline(HealthResponse), content_type = "application/json",),
         (status = 500, description = "Undetermined"),
@@ -130,6 +132,7 @@ This endpoint corresponds to the Kubernetes liveness probe, which automatically
 restarts the pod if the check fails.
  */
 #[utoipa::path(
+    tag = "health",
     responses(
         (status = 200, description = "Up", body = inline(HealthResponse), content_type = "application/json",),
         (status = 500, description = "Undetermined"),
@@ -152,6 +155,7 @@ you define.
 Corresponds to the Kubernetes startup probe.
  */
 #[utoipa::path(
+    tag = "health",
     responses(
         (status = 200, description = "Up", body = inline(HealthResponse), content_type = "application/json",),
         (status = 500, description = "Undetermined"),

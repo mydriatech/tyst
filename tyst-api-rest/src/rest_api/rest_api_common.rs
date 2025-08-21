@@ -17,13 +17,13 @@
 
 //! Common utility functions for REST API resources
 
+use actix_web::Error;
+use actix_web::HttpRequest;
+use actix_web::Result;
 use actix_web::error::ErrorBadRequest;
 use actix_web::web::Bytes;
 use actix_web::web::BytesMut;
 use actix_web::web::Payload;
-use actix_web::Error;
-use actix_web::HttpRequest;
-use actix_web::Result;
 use futures::StreamExt;
 use serde::Deserialize;
 use serde::Serialize;

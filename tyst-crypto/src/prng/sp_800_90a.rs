@@ -19,14 +19,14 @@
 
 mod hmac_drbd;
 
+use crate::prng::os_entropy_source::OsEntropySource;
 use hmac_drbd::HmacDrbd;
+use tyst_oids as oids;
+use tyst_traits::CryptoRegistry;
 use tyst_traits::factory::AlgorithmMetaData;
 use tyst_traits::factory::Factory;
 use tyst_traits::prng::SecureRandom;
 use tyst_traits::prng::SecureRandomParams;
-use tyst_traits::CryptoRegistry;
-
-use crate::prng::os_entropy_source::OsEntropySource;
 
 /*
 From https://pages.nist.gov/ACVP/draft-vassilev-acvp-drbg.html#supported_values
@@ -106,7 +106,9 @@ impl Factory for Sp80090aSecureRandomFactory {
         params: Self::Parameters,
     ) -> Box<Self::Type> {
         if params.seed().is_some() {
-            log::info!("A seed was provided to the NIST SP 800-90A DRBG, but this was ignored. Use nonce instead.");
+            log::info!(
+                "A seed was provided to the NIST SP 800-90A DRBG, but this was ignored. Use nonce instead."
+            );
         }
         let nonce = params.nonce();
         match algorithm_name {
@@ -114,7 +116,10 @@ impl Factory for Sp80090aSecureRandomFactory {
                 algorithm_name,
                 Box::new(HmacDrbd::new(
                     Box::new(OsEntropySource::default()),
-                    registry.macs().by_name("HMAC-SHA3-256").unwrap(),
+                    registry
+                        .macs()
+                        .by_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA3_256))
+                        .unwrap(),
                     nonce,
                 )),
             )),
@@ -122,7 +127,10 @@ impl Factory for Sp80090aSecureRandomFactory {
                 algorithm_name,
                 Box::new(HmacDrbd::new(
                     Box::new(OsEntropySource::default()),
-                    registry.macs().by_name("HMAC-SHA3-384").unwrap(),
+                    registry
+                        .macs()
+                        .by_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA3_384))
+                        .unwrap(),
                     nonce,
                 )),
             )),
@@ -130,7 +138,10 @@ impl Factory for Sp80090aSecureRandomFactory {
                 algorithm_name,
                 Box::new(HmacDrbd::new(
                     Box::new(OsEntropySource::default()),
-                    registry.macs().by_name("HMAC-SHA3-512").unwrap(),
+                    registry
+                        .macs()
+                        .by_oid(&tyst_encdec::oid::as_string(oids::mac::HMAC_SHA3_512))
+                        .unwrap(),
                     nonce,
                 )),
             )),
