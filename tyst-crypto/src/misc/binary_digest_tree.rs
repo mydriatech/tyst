@@ -67,9 +67,14 @@ impl BinaryDigestTreeProof {
         &self.digest_algorithm_oid
     }
 
-    /// Encoded proof.
+    /// Encoded and packed proof with root hash first.
     pub fn get_encoded_proof(&self) -> &[u8] {
         &self.encoded_proof
+    }
+
+    /// Get digest output size in bytes
+    pub fn get_digest_size_bytes(&self) -> usize {
+        self.digest_size_bytes
     }
 
     /// Get root hash.
