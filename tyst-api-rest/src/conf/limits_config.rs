@@ -17,11 +17,11 @@
 
 //! Resource limitations detection and config override parsing.
 
+use super::AppConfigDefaults;
 use config::ConfigBuilder;
 use config::builder::BuilderState;
-use serde::{Deserialize, Serialize};
-
-use super::AppConfigDefaults;
+use serde::Deserialize;
+use serde::Serialize;
 
 /// Resource limitations override configuration.
 #[derive(Debug, Deserialize, Serialize)]
@@ -57,10 +57,10 @@ impl AppConfigDefaults for ResourceLimitsConfig {
                 }
                 "memory" => {
                     let memory_controller: &cgroups_rs::memory::MemController = subsystem.into();
-                    if let Ok(mem) = memory_controller.get_mem() {
-                        if let Some(cgroups_rs::MaxValue::Value(mem_max_value)) = mem.max {
-                            memory_max = u64::try_from(std::cmp::max(mem_max_value, 0)).ok();
-                        }
+                    if let Ok(mem) = memory_controller.get_mem()
+                        && let Some(cgroups_rs::MaxValue::Value(mem_max_value)) = mem.max
+                    {
+                        memory_max = u64::try_from(std::cmp::max(mem_max_value, 0)).ok();
                     }
                 }
                 _ => {
@@ -70,10 +70,10 @@ impl AppConfigDefaults for ResourceLimitsConfig {
                 }
             });
         let mut cpus = std::thread::available_parallelism().unwrap().get() as f64;
-        if let Some(cpu_quota) = cpu_quota {
-            if let Some(cpu_period) = cpu_period {
-                cpus = cpu_quota as f64 / cpu_period as f64;
-            }
+        if let Some(cpu_quota) = cpu_quota
+            && let Some(cpu_period) = cpu_period
+        {
+            cpus = cpu_quota as f64 / cpu_period as f64;
         }
         if log::log_enabled!(log::Level::Debug) {
             log::debug!("Detected resource limits: cpus: {cpus}, memory: {memory_max:?}");
