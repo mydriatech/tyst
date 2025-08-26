@@ -32,7 +32,7 @@ env_logger = { workspace = true, features = [] }
 
 # Config and platform info
 config = { version = "0.15", default-features = false, features = ["json"] }
-cgroups-rs = "0.3"
+cgroups-rs = "0.4"
 
 # REST API
 actix-web = { workspace = true, features = [] }
