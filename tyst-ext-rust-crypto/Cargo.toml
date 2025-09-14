@@ -16,7 +16,7 @@ tyst_encdec = { path = "../tyst-encdec" }
 # Logging and tracing
 log = { workspace = true, features = [] }
 
-rand = { version = "0.8", default-features = true, features = [] }
+rand = { version = "0.9", default-features = true, features = [] }
 rsa = { version = "0.9", default-features = true, features = ["sha2"] }
 ecdsa = { version = "0.16", default-features = true, features = ["der"] }
 p256 = { version = "0.13", default-features = true, features = [] }
